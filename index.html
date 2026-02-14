@@ -3,144 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v5.1</title>
+    <title>HUNTER TERMINAL v5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
-        :root { --bg: #05070a; --card: #0d1117; --border: #21262d; --cyan: #22d3ee; --emerald: #34d399; --rose: #fb7185; --amber: #f59e0b; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #c9d1d9; font-size: 13px; margin: 0; }
+        :root { 
+            --bg: #0F172A; /* 深海軍藍 */
+            --card: #1E293B; 
+            --border: #334155; 
+            --amber-white: #FEF3C7; /* 琥珀白 */
+            --blue: #3B82F6; 
+            --gold: #D97706; /* 琥珀金 */
+            --green: #10B981;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--amber-white); font-size: 13px; margin: 0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .terminal-border { border: 1px solid var(--border); }
         .bg-card { background-color: var(--card); }
-        input { background: #000; border: 1px solid #30363d; color: var(--cyan); padding: 4px; border-radius: 4px; font-family: 'JetBrains Mono'; }
-        .tab-btn { padding: 8px 20px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 11px; color: #8b949e; cursor: pointer; }
-        .tab-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(34, 211, 238, 0.05); }
-        .btn-action { background: #21262d; border: 1px solid #30363d; padding: 6px 16px; border-radius: 6px; font-size: 11px; transition: 0.2s; cursor: pointer; }
-        .btn-action:hover { border-color: var(--cyan); color: var(--cyan); }
-        .chart-container { position: relative; height: 280px; width: 100%; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        input { background: #000; border: 1px solid var(--border); color: var(--blue); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; }
+        .tab-btn { padding: 10px 24px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 11px; color: #94A3B8; cursor: pointer; letter-spacing: 1px; }
+        .tab-btn.active { border-color: var(--gold); color: var(--amber-white); background: rgba(254, 243, 199, 0.05); }
+        .btn-action { background: #334155; border: 1px solid #475569; padding: 8px 16px; border-radius: 6px; font-size: 11px; transition: 0.2s; cursor: pointer; color: var(--amber-white); font-weight: bold; }
+        .btn-action:hover { border-color: var(--gold); background: #1E293B; }
+        .chart-container { position: relative; height: 300px; width: 100%; padding: 10px; }
     </style>
 </head>
 <body class="p-4">
 
     <div class="max-w-[1300px] mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-gray-800 pb-0">
-            <div class="flex items-center gap-6">
-                <span class="font-black text-white tracking-tighter text-xl italic text-cyan-500">HUNTER_TERM_v5.1</span>
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-700 pb-0">
+            <div class="flex items-center gap-8">
+                <span class="font-bold text-white tracking-tighter text-2xl">HUNTER_TERMINAL</span>
                 <nav class="flex">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">[ DECISION_CORE ]</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">[ TREND_RADAR ]</button>
                 </nav>
             </div>
             <div class="flex items-center gap-4 pb-2">
-                <div class="text-[10px] mono text-gray-500 text-right uppercase">
-                    <span id="load-status">System: Standby</span><br>
-                    <span id="last-sync-date">Last Sync: --</span>
+                <div class="text-[10px] mono text-slate-500 text-right">
+                    <span id="load-status">MD_STATE: ACTIVE</span><br>
+                    <span id="last-sync-date">REFRESH: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('file-input').click()" class="btn-action font-mono text-cyan-400 tracking-tighter">LOAD_NEW_INTEL</button>
+                <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL_JSON</button>
             </div>
         </header>
 
-        <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5">
             <div class="md:col-span-3 space-y-4">
-                <section class="bg-card terminal-border p-4">
-                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-widest italic">Live Intelligence</h2>
-                    <div class="space-y-4">
+                <section class="bg-card terminal-border p-5 rounded-lg shadow-xl">
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-5 tracking-widest border-b border-slate-700 pb-2">Market Intelligence</h2>
+                    <div class="space-y-5">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-400">TSM ADR</span>
+                            <span class="text-xs">TSM ADR</span>
                             <div class="text-right font-bold">
-                                <p id="adr-price" class="mono text-white text-base">--</p>
+                                <p id="adr-price" class="mono text-white text-lg">--</p>
                                 <p id="adr-change" class="text-[10px]">--</p>
                             </div>
                         </div>
-                        <div class="flex justify-between text-xs"><span>2330 Local Close</span><span id="stock-2330-market" class="mono text-white font-bold">--</span></div>
-                        <div class="flex justify-between text-xs"><span>3711 Local Close</span><span id="stock-3711-market" class="mono text-white font-bold">--</span></div>
-                        <div class="flex justify-between text-xs border-t border-gray-800 pt-2 text-amber-500">
-                            <span>ADR Premium</span><span id="premium-val" class="mono font-bold">--</span>
+                        <div class="flex justify-between text-xs text-slate-400"><span>2330 Local Close</span><span id="stock-2330-market" class="mono text-white font-bold">--</span></div>
+                        <div class="flex justify-between text-xs text-slate-400"><span>3711 Local Close</span><span id="stock-3711-market" class="mono text-white font-bold">--</span></div>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-700 text-gold">
+                            <span class="text-[10px] font-bold">PREMIUM RATIO</span><span id="premium-val" class="mono font-bold text-lg">--</span>
                         </div>
                     </div>
                 </section>
-                <section class="bg-card terminal-border p-4">
-                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-widest italic">Global Market</h2>
-                    <div class="text-xs space-y-2">
-                        <div class="flex justify-between"><span>SOX Index</span><span id="sox-val" class="mono">--</span></div>
-                        <div class="flex justify-between"><span>NVDA Price</span><span id="nvda-val" class="mono">--</span></div>
+                <section class="bg-card terminal-border p-5 rounded-lg">
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest italic">Budget / Goal</h2>
+                    <div class="space-y-4">
+                        <div><label class="block text-[10px] text-slate-500 mb-1">CAPITAL (TWD)</label><input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full"></div>
+                        <div><label class="flex justify-between text-[10px] text-slate-500 mb-1">ROI GOAL <span id="roi-val-display" class="text-gold">15%</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div>
                     </div>
                 </section>
             </div>
 
-            <div class="md:col-span-5 space-y-4">
-                <section class="bg-card terminal-border p-5 h-full flex flex-col justify-between">
+            <div class="md:col-span-5">
+                <section class="bg-card terminal-border p-6 rounded-lg h-full flex flex-col justify-between shadow-xl">
                     <div>
-                        <h2 class="text-[10px] font-black text-gray-500 uppercase mb-6 tracking-widest">Target Configuration</h2>
-                        <div class="grid grid-cols-2 gap-4 mb-8">
-                            <div class="bg-black/40 p-3 rounded border border-gray-800">
-                                <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">3711 進場目標價</p>
-                                <input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-2xl font-black text-cyan-400">
+                        <h2 class="text-[10px] font-black text-slate-500 uppercase mb-8 tracking-widest">伏擊目標設定 (Ambush Targets)</h2>
+                        <div class="grid grid-cols-2 gap-6 mb-10">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-3 italic underline">3711 回檔建議</p>
+                                <input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-3xl font-bold">
                             </div>
-                            <div class="bg-black/40 p-3 rounded border border-gray-800">
-                                <p class="text-[10px] text-gray-400 uppercase font-bold mb-2 text-emerald-500">2330 回檔買入價</p>
-                                <input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-2xl font-black text-emerald-400">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-3 italic underline">2330 回檔建議</p>
+                                <input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-3xl font-bold">
                             </div>
                         </div>
                     </div>
-                    <div class="border-t border-gray-800 pt-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span id="status-dot" class="status-dot bg-gray-600"></span>
-                            <span id="action-text" class="text-xl font-black text-white uppercase italic tracking-tighter">Standby</span>
+                    <div class="bg-slate-900/50 p-4 rounded border border-slate-700">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span>
+                            <span id="action-text" class="text-xl font-bold uppercase tracking-tight">System Standby</span>
                         </div>
-                        <p id="action-desc" class="text-[10px] text-gray-500 uppercase">Awaiting Intel Sync...</p>
+                        <p id="action-desc" class="text-[11px] text-slate-500">正在分析美股 ADR 溢價對台股開盤回測之影響力...</p>
                     </div>
                 </section>
             </div>
 
             <div class="md:col-span-4 space-y-4">
-                <section class="bg-card terminal-border p-5">
-                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-6 border-b border-gray-800 pb-2 italic">Outcome Projection</h2>
-                    <div class="space-y-4 text-xs">
-                        <div class="flex justify-between"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-cyan-400 font-bold">--</span></div>
-                        <div class="flex justify-between"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-emerald-400 font-bold">--</span></div>
-                        <div class="flex justify-between"><span>Target Exit (ROI)</span><span id="res-target-roi" class="mono text-white">--</span></div>
-                        <div class="flex justify-between border-t border-gray-800 pt-2 font-bold"><span>Capital Used</span><span id="res-used" class="mono">--</span></div>
+                <section class="bg-card terminal-border p-5 rounded-lg">
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2">Projection Results</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between"><span>3711 Forward P/E</span><span id="res-pe" class="mono text-green font-bold text-base">--</span></div>
+                        <div class="flex justify-between"><span>2330 Allocation</span><span id="res-2330-share" class="mono text-white font-bold">--</span></div>
+                        <div class="flex justify-between"><span>Target ROI Exit</span><span id="res-target-roi" class="mono text-gold font-bold text-base">--</span></div>
+                        <div class="flex justify-between border-t border-slate-700 pt-3 text-slate-400"><span>EST. CAPITAL USED</span><span id="res-used" class="mono text-white">--</span></div>
                     </div>
                 </section>
-                <div class="bg-card terminal-border p-4 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase mb-1">Premium Pressure</p>
-                    <p id="p-indicator" class="text-3xl mono font-black text-amber-500 tracking-tighter">--</p>
-                </div>
             </div>
         </main>
 
-        <main id="view-radar" class="hidden space-y-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-card terminal-border p-4">
-                    <h2 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest italic">3711 Radar (Local vs ADR)</h2>
+        <main id="view-radar" class="hidden space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="bg-card terminal-border p-5 rounded-lg">
+                    <h2 class="text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-widest italic">3711 趨勢雷達 (Local vs ADR)</h2>
                     <div class="chart-container"><canvas id="chart-3711"></canvas></div>
                 </div>
-                <div class="bg-card terminal-border p-4">
-                    <h2 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest italic">2330 Radar (Local vs ADR)</h2>
+                <div class="bg-card terminal-border p-5 rounded-lg">
+                    <h2 class="text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-widest italic">2330 趨勢雷達 (Local vs ADR)</h2>
                     <div class="chart-container"><canvas id="chart-2330"></canvas></div>
                 </div>
             </div>
-            <div class="bg-card terminal-border p-4">
-                <h2 class="text-[10px] font-black text-gray-400 uppercase mb-2 italic tracking-widest text-amber-500">Premium Volatility</h2>
-                <div class="chart-container" style="height: 120px;"><canvas id="chart-premium"></canvas></div>
+            <div class="bg-card terminal-border p-5 rounded-lg">
+                <h2 class="text-[10px] font-bold text-slate-500 uppercase mb-3 italic text-gold">Premium Intensity (市場溢價率)</h2>
+                <div class="chart-container" style="height: 150px;"><canvas id="chart-premium"></canvas></div>
             </div>
         </main>
 
-        <footer class="mt-4 bg-card terminal-border overflow-hidden">
-            <div class="bg-gray-900/40 p-2 text-[9px] font-bold text-gray-500 flex justify-between uppercase">
-                <span>Intelligence_Stream_History</span>
-                <button onclick="clearHistory()" class="text-rose-500">Delete_All</button>
+        <footer class="mt-6 bg-card terminal-border rounded-lg overflow-hidden">
+            <div class="bg-slate-900 p-3 text-[10px] font-bold text-slate-400 flex justify-between">
+                <span>INTEL_DATA_STREAM</span>
+                <button onclick="clearHistory()" class="text-rose-400 hover:underline">RESET_ALL</button>
             </div>
-            <div class="max-h-32 overflow-y-auto">
-                <table class="w-full text-left text-[11px] mono border-collapse">
-                    <thead class="sticky top-0 bg-card border-b border-gray-800 text-gray-500 uppercase text-[9px]">
-                        <tr><th class="p-2">Date</th><th class="p-2">ADR</th><th class="p-2">2330_L</th><th class="p-2">3711_L</th><th class="p-2">Prem</th><th class="p-2">Status</th></tr>
+            <div class="max-h-40 overflow-y-auto">
+                <table class="w-full text-left text-xs mono">
+                    <thead class="bg-slate-800 text-slate-500 uppercase text-[9px]">
+                        <tr><th class="p-3">TIMESTAMP</th><th class="p-3">ADR</th><th class="p-3">2330_L</th><th class="p-3">3711_L</th><th class="p-3">PREM</th><th class="p-3">SIG</th></tr>
                     </thead>
-                    <tbody id="history-body" class="divide-y divide-gray-900"></tbody>
+                    <tbody id="history-body" class="divide-y divide-slate-800"></tbody>
                 </table>
             </div>
         </footer>
@@ -148,15 +151,12 @@
 
     <script>
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('h51_history') || '[]');
+        let history = JSON.parse(localStorage.getItem('h52_history') || '[]');
         let chartInstances = {};
 
-        // Initialize App & Charts
         window.onload = () => {
             initCharts();
-            
-            // Auto-load last state or set defaults
-            const lastData = localStorage.getItem('h51_last_data');
+            const lastData = localStorage.getItem('h52_last_data');
             if(lastData) {
                 marketData = JSON.parse(lastData);
                 updateMarketUI();
@@ -164,7 +164,6 @@
                 calculate();
                 updateCharts();
             } else {
-                // Pre-fill placeholder for visualization
                 document.getElementById('target-3711').value = 340.5;
                 document.getElementById('target-2330').value = 1820;
             }
@@ -180,12 +179,12 @@
 
         function calculate() {
             if(!marketData) return;
-            const capital = parseFloat(localStorage.getItem('h51_cap') || 570000);
-            const roi = parseFloat(localStorage.getItem('h51_roi') || 15) / 100;
+            const capital = parseFloat(document.getElementById('input-capital').value);
+            const roi = parseFloat(document.getElementById('input-roi').value) / 100;
             const t3711 = parseFloat(document.getElementById('target-3711').value);
             const t2330 = parseFloat(document.getElementById('target-2330').value);
 
-            // Calc P/E & Outcome
+            document.getElementById('roi-val-display').innerText = (roi * 100).toFixed(0) + "%";
             const pe = (t3711 / 14.53).toFixed(1);
             document.getElementById('res-pe').innerText = pe + "X";
             const cost3711 = t3711 * 1000;
@@ -194,23 +193,18 @@
             
             document.getElementById('res-2330-share').innerText = s2330 + " 股";
             document.getElementById('res-target-roi').innerText = (t3711 * (1 + roi)).toFixed(1) + " 元";
-            document.getElementById('res-used').innerText = (cost3711 + s2330 * t2330).toLocaleString() + " TWD";
+            document.getElementById('res-used').innerText = (cost3711 + s2330 * t2330).toLocaleString();
 
-            // Premium Logic
             const adrConv = marketData.tsm_adr / 5 * 31.36;
             const premium = ((adrConv / marketData.stock_2330_current) - 1) * 100;
             document.getElementById('premium-val').innerText = premium.toFixed(2) + "%";
-            document.getElementById('p-indicator').innerText = premium.toFixed(1) + "%";
 
-            // UI
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('action-text');
             if (marketData.stock_3711_current <= t3711) { 
-                dot.className="status-dot bg-emerald-500 shadow-[0_0_8px_#34d399]"; 
-                txt.innerText="Execute Buy"; 
+                dot.style.backgroundColor = '#10B981'; txt.innerText="執行進場指令"; 
             } else { 
-                dot.className="status-dot bg-amber-500 shadow-[0_0_8px_#f59e0b]"; 
-                txt.innerText="Lurking Area"; 
+                dot.style.backgroundColor = '#D97706'; txt.innerText="目標潛伏中"; 
             }
         }
 
@@ -219,7 +213,6 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = JSON.parse(e.target.result);
-                // Support both single and array
                 const items = Array.isArray(data) ? data : [data];
                 items.forEach(item => {
                     if (!history.find(h => h.date === item.date)) {
@@ -237,9 +230,8 @@
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                localStorage.setItem('h51_last_data', JSON.stringify(marketData));
-                localStorage.setItem('h51_history', JSON.stringify(history));
-                
+                localStorage.setItem('h52_last_data', JSON.stringify(marketData));
+                localStorage.setItem('h52_history', JSON.stringify(history));
                 updateMarketUI();
                 renderHistory();
                 calculate();
@@ -251,65 +243,49 @@
         function updateMarketUI() {
             document.getElementById('adr-price').innerText = "$" + marketData.tsm_adr;
             document.getElementById('adr-change').innerText = marketData.adr_change + "%";
-            document.getElementById('adr-change').className = marketData.adr_change >= 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+            document.getElementById('adr-change').className = marketData.adr_change >= 0 ? "text-green font-bold" : "text-rose-400 font-bold";
             document.getElementById('stock-2330-market').innerText = marketData.stock_2330_current;
             document.getElementById('stock-3711-market').innerText = marketData.stock_3711_current;
-            document.getElementById('sox-val').innerText = marketData.sox_val || "--";
-            document.getElementById('nvda-val').innerText = marketData.nvda_val || "--";
-            document.getElementById('last-sync-date').innerText = "Sync: " + marketData.date;
+            document.getElementById('last-sync-date').innerText = "REFRESH: " + marketData.date;
         }
 
         function renderHistory() {
             document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => `
-                <tr class="hover:bg-gray-800/30">
-                    <td class="p-2 text-gray-500">${h.date}</td>
-                    <td class="p-2 mono text-white font-bold">$${h.adr}</td>
-                    <td class="p-2 mono text-white">${h.p2330}</td>
-                    <td class="p-2 mono text-white">${h.p3711}</td>
-                    <td class="p-2 mono text-amber-500">${h.premium.toFixed(1)}%</td>
-                    <td class="p-2 text-[10px] uppercase text-cyan-400">Synced</td>
+                <tr class="hover:bg-slate-800">
+                    <td class="p-3 text-slate-500">${h.date}</td>
+                    <td class="p-3 mono text-white">$${h.adr}</td>
+                    <td class="p-3 mono">${h.p2330}</td>
+                    <td class="p-3 mono">${h.p3711}</td>
+                    <td class="p-3 mono text-gold">${h.premium.toFixed(1)}%</td>
+                    <td class="p-3 text-[10px] text-green font-bold">SYNCED</td>
                 </tr>
             `).join('');
         }
 
         function initCharts() {
-            const glowPlugin = {
-                id: 'glow',
-                beforeDraw: (chart) => {
-                    const ctx = chart.ctx;
-                    chart.data.datasets.forEach(dataset => {
-                        ctx.save();
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = dataset.borderColor;
-                    });
-                },
-                afterDraw: (chart) => { chart.ctx.restore(); }
-            };
-
-            const config = (title, color) => ({
+            const config = (color) => ({
                 type: 'line',
-                plugins: [glowPlugin],
                 data: { labels: [], datasets: [
-                    { label: 'Market Price', borderColor: '#fff', borderWidth: 2, data: [], tension: 0.3, pointRadius: 2 },
-                    { label: 'ADR Strength', borderColor: '#22d3ee', borderWidth: 2, data: [], tension: 0.3, pointRadius: 2 },
-                    { label: 'Target', borderColor: color, borderDash: [5, 5], borderWidth: 1, data: [], pointRadius: 0 }
+                    { label: 'Market', borderColor: '#FEF3C7', borderWidth: 2, data: [], tension: 0.1, pointRadius: 2 },
+                    { label: 'ADR Power', borderColor: '#3B82F6', borderWidth: 2, data: [], tension: 0.1, pointRadius: 2 },
+                    { label: 'Target', borderColor: '#D97706', borderDash: [4, 4], borderWidth: 1, data: [], pointRadius: 0 }
                 ]},
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { grid: { color: '#1a1d23' }, ticks: { font: { size: 9 }, color: '#484f58' } },
-                        y: { grid: { color: '#1a1d23' }, ticks: { font: { size: 9 }, color: '#484f58' } }
+                        x: { grid: { color: '#1E293B' }, ticks: { font: { size: 9 }, color: '#64748B' } },
+                        y: { grid: { color: '#1E293B' }, ticks: { font: { size: 9 }, color: '#64748B' } }
                     }
                 }
             });
 
-            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), config('3711', '#fb7185'));
-            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), config('2330', '#34d399'));
+            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), config('#D97706'));
+            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), config('#D97706'));
             chartInstances.premium = new Chart(document.getElementById('chart-premium'), {
                 type: 'bar',
-                data: { labels: [], datasets: [{ backgroundColor: 'rgba(245, 158, 11, 0.3)', borderColor: '#f59e0b', borderWidth: 1, data: [] }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1a1d23' }, ticks: { font: { size: 9 } } } } }
+                data: { labels: [], datasets: [{ backgroundColor: 'rgba(217, 119, 6, 0.2)', borderColor: '#D97706', borderWidth: 1, data: [] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1E293B' } } } }
             });
         }
 
@@ -317,21 +293,18 @@
             if (history.length === 0) return;
             const labels = history.map(h => h.date);
             
-            // 3711 Chart
             chartInstances.c3711.data.labels = labels;
             chartInstances.c3711.data.datasets[0].data = history.map(h => h.p3711);
             chartInstances.c3711.data.datasets[1].data = history.map(h => h.adrConv * (h.p3711/h.p2330)); 
             chartInstances.c3711.data.datasets[2].data = history.map(h => h.target3711 || 340);
             chartInstances.c3711.update();
 
-            // 2330 Chart
             chartInstances.c2330.data.labels = labels;
             chartInstances.c2330.data.datasets[0].data = history.map(h => h.p2330);
             chartInstances.c2330.data.datasets[1].data = history.map(h => h.adrConv);
             chartInstances.c2330.data.datasets[2].data = history.map(h => 1820);
             chartInstances.c2330.update();
 
-            // Premium Chart
             chartInstances.premium.data.labels = labels;
             chartInstances.premium.data.datasets[0].data = history.map(h => h.premium);
             chartInstances.premium.update();
