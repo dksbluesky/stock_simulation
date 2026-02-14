@@ -3,178 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v4.0</title>
+    <title>HUNTER TERMINAL v4.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
-        :root { --bg: #0a0c10; --card: #11141b; --border: #232834; --text-dim: #6b7280; --cyan: #22d3ee; --emerald: #34d399; --rose: #fb7185; }
+        :root { --bg: #0a0c10; --card: #11141b; --border: #232834; --cyan: #22d3ee; --emerald: #34d399; --rose: #fb7185; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #d1d5db; font-size: 13px; line-height: 1.2; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .border-terminal { border: 1px solid var(--border); }
         .bg-terminal { background-color: var(--card); }
-        input[type="number"], input[type="range"] { background: #000; border: 1px solid #333; color: var(--cyan); padding: 2px 4px; }
-        .btn-action { background: #1e293b; border: 1px solid #334155; padding: 4px 12px; transition: all 0.2s; }
-        .btn-action:hover { background: #334155; }
-        .progress-bg { background: #1f2937; height: 4px; border-radius: 2px; }
-        .progress-fill { background: var(--cyan); height: 4px; border-radius: 2px; transition: width 0.5s; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        input { background: #000; border: 1px solid #333; color: var(--cyan); padding: 2px 4px; border-radius: 4px; }
+        .btn-action { background: #1e293b; border: 1px solid #334155; padding: 6px 16px; transition: all 0.2s; border-radius: 6px; }
+        .btn-action:hover { background: #334155; border-color: var(--cyan); }
+        .progress-bg { background: #1f2937; height: 6px; border-radius: 3px; overflow: hidden; }
+        .progress-fill { background: var(--cyan); height: 100%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     </style>
 </head>
-<body class="p-3">
+<body class="p-4">
 
-    <div class="max-w-[1400px] mx-auto">
-        <header class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
-            <div class="flex items-center gap-4">
-                <span class="font-bold text-white tracking-tighter text-lg">HUNTER_TERM_v4.0</span>
-                <div class="flex gap-3 text-[10px] mono uppercase text-gray-500">
-                    <span>SYS_ACTIVE: TRUE</span>
-                    <span>MD_SOURCE: JSON_LOADER</span>
+    <div class="max-w-[1200px] mx-auto">
+        <header class="flex justify-between items-center mb-6 border-b border-gray-800 pb-3">
+            <div class="flex items-center gap-6">
+                <span class="font-bold text-white tracking-tighter text-xl italic">HUNTER_TERM_v4.1</span>
+                <div class="hidden md:flex gap-4 text-[10px] mono uppercase text-gray-500">
+                    <span>STATUS: ONLINE</span>
+                    <span id="load-status">DATA_LOADED: FALSE</span>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <input type="file" id="file-input" class="hidden" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('file-input').click()" class="btn-action text-xs font-bold text-cyan-400">載入情報檔 (.json)</button>
-                <button onclick="exportData()" class="btn-action text-xs text-gray-400">導出當前數據</button>
+            <div class="flex gap-3">
+                <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
+                <button onclick="document.getElementById('file-input').click()" class="btn-action text-xs font-bold text-cyan-400">載入情報檔案 (.json)</button>
             </div>
         </header>
 
-        <div class="grid grid-cols-12 gap-3">
-            <div class="col-span-12 lg:col-span-3 space-y-3">
-                <section class="bg-terminal border-terminal p-3">
-                    <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-3 border-b border-gray-800 pb-1">Market Intel</h2>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-3 space-y-4">
+                <section class="bg-terminal border-terminal p-4">
+                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-tighter">Market Overview</h2>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs">TSM ADR</span>
+                            <span class="text-xs text-gray-400">TSM ADR</span>
                             <div class="text-right">
-                                <p id="adr-price" class="mono font-bold text-white">--</p>
+                                <p id="adr-price" class="mono font-bold text-white text-base">--</p>
                                 <p id="adr-change" class="text-[10px]">--</p>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs">SOX (費半)</span>
-                            <span id="sox-val" class="mono text-white">--</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs">NVDA</span>
-                            <span id="nvda-val" class="mono text-white">--</span>
-                        </div>
+                        <div class="flex justify-between text-xs"><span class="text-gray-400">SOX Index</span><span id="sox-val" class="mono text-white">--</span></div>
+                        <div class="flex justify-between text-xs"><span class="text-gray-400">NVDA Price</span><span id="nvda-val" class="mono text-white">--</span></div>
                     </div>
                 </section>
 
-                <section class="bg-terminal border-terminal p-3">
-                    <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-3 border-b border-gray-800 pb-1">Strategic Intent</h2>
-                    <div class="space-y-3">
+                <section class="bg-terminal border-terminal p-4">
+                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-tighter">Budget Control</h2>
+                    <div class="space-y-4">
                         <div>
-                            <div class="flex justify-between text-[10px] mb-1"><span>Total Capital</span><span id="cap-display">--</span></div>
-                            <input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full text-xs font-bold">
+                            <label class="block text-[10px] text-gray-500 mb-1">CAPITAL (TWD)</label>
+                            <input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full font-bold mono">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] mb-1"><span>ROI Goal</span><span id="roi-val-display">15%</span></div>
+                            <label class="flex justify-between text-[10px] text-gray-500 mb-1">ROI TARGET <span id="roi-val-display" class="text-cyan-400">15%</span></label>
                             <input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full">
                         </div>
                     </div>
                 </section>
             </div>
 
-            <div class="col-span-12 lg:col-span-5 space-y-3">
-                <section class="bg-terminal border-terminal p-4 h-full">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-1">Strategy Execution Status</h2>
-                            <div class="flex items-center">
-                                <span id="status-dot" class="status-dot bg-gray-600"></span>
-                                <span id="action-text" class="text-xl font-bold tracking-tight text-white uppercase">Waiting for Data</span>
+            <div class="md:col-span-5 space-y-4">
+                <section class="bg-terminal border-terminal p-5 h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-8">
+                            <div>
+                                <h2 class="text-[10px] font-black text-gray-500 uppercase mb-2">Execution Protocol</h2>
+                                <div class="flex items-center">
+                                    <span id="status-dot" class="status-dot bg-gray-700"></span>
+                                    <span id="action-text" class="text-2xl font-black tracking-tighter text-white uppercase">Waiting Data</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-500 uppercase mb-1">Forward P/E</p>
+                                <p id="res-pe" class="text-3xl font-black mono text-cyan-400 leading-none">--</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] text-gray-500 uppercase">Current P/E</p>
-                            <p id="res-pe" class="text-2xl font-black mono text-cyan-400">--</p>
+
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between text-[10px] mb-2 font-bold uppercase">
+                                    <span>Price Distance (Target: <span id="target-p-label" class="text-white">--</span>)</span>
+                                    <span id="dist-p-label" class="text-cyan-400 font-mono">--</span>
+                                </div>
+                                <div class="progress-bg"><div id="progress-p" class="progress-fill" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] mb-2 font-bold uppercase">
+                                    <span>P/E Distance (Target: <span id="target-pe-label" class="text-white">--</span>)</span>
+                                    <span id="dist-pe-label" class="text-cyan-400 font-mono">--</span>
+                                </div>
+                                <div class="progress-bg"><div id="progress-pe" class="progress-fill" style="width: 0%"></div></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-gray-800/50">
                         <div>
-                            <div class="flex justify-between text-[10px] mb-2 font-bold uppercase">
-                                <span>Price Trigger (Target <span id="target-p-label">340</span>)</span>
-                                <span id="dist-p-label" class="text-cyan-400">--</span>
-                            </div>
-                            <div class="progress-bg"><div id="progress-p" class="progress-fill" style="width: 0%"></div></div>
+                            <p class="text-[10px] text-gray-500 uppercase mb-1 font-black italic">建議進場價 (3711)</p>
+                            <input type="number" id="input-price-3711" step="0.5" onchange="calculate()" class="w-full font-bold text-white text-xl">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] mb-2 font-bold uppercase">
-                                <span>P/E Trigger (Target <span id="target-pe-label">23.4</span>)</span>
-                                <span id="dist-pe-label" class="text-cyan-400">--</span>
-                            </div>
-                            <div class="progress-bg"><div id="progress-pe" class="progress-fill" style="width: 0%"></div></div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-800">
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase mb-1 font-bold italic underline">建議進場價 (Suggested)</p>
-                                <input type="number" id="input-price-3711" step="0.5" onchange="calculate()" class="w-full font-bold text-white text-lg">
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase mb-1 font-bold">2330 買入預算價</p>
-                                <input type="number" id="input-price-2330" step="1" onchange="calculate()" class="w-full font-bold text-emerald-400 text-lg">
-                            </div>
+                            <p class="text-[10px] text-gray-500 uppercase mb-1 font-black">台積零股買入價</p>
+                            <input type="number" id="input-price-2330" step="1" onchange="calculate()" class="w-full font-bold text-emerald-400 text-xl">
                         </div>
                     </div>
                 </section>
             </div>
 
-            <div class="col-span-12 lg:col-span-4 space-y-3">
-                <section class="bg-terminal border-terminal p-4">
-                    <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-4 border-b border-gray-800 pb-1">Execution Plan</h2>
-                    <div class="space-y-4">
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">3711 Allocation</span>
-                            <span id="res-3711-share" class="mono text-white font-bold">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">2330 Odd Lots</span>
-                            <span id="res-2330-share" class="mono text-white font-bold">--</span>
-                        </div>
-                        <div class="flex justify-between pt-2 border-t border-gray-800">
-                            <span class="text-gray-400">Target Exit (ROI)</span>
-                            <span id="res-target-price" class="mono text-emerald-400 font-bold">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Stop Loss (5%)</span>
-                            <span id="res-sl-price" class="mono text-rose-400 font-bold">--</span>
-                        </div>
+            <div class="md:col-span-4 space-y-4">
+                <section class="bg-terminal border-terminal p-5">
+                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-6 border-b border-gray-800 pb-2">Outcome Projection</h2>
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center"><span class="text-gray-400">3711 Allocation</span><span id="res-3711-share" class="mono text-white font-bold text-sm">--</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-400">2330 Projection</span><span id="res-2330-share" class="mono text-white font-bold text-sm">--</span></div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-800/50"><span class="text-gray-400">Target ROI Exit</span><span id="res-target-price" class="mono text-emerald-400 font-bold text-sm">--</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-400">Stop Loss (5%)</span><span id="res-sl-price" class="mono text-rose-500 font-bold text-sm">--</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-400">Cash Reserve</span><span id="res-remain" class="mono text-white font-bold text-sm">--</span></div>
                     </div>
                 </section>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-terminal border-terminal p-3">
-                        <p class="text-[9px] text-gray-500 uppercase">Capital Ratio</p>
-                        <p id="res-ratio" class="text-lg mono text-white">--</p>
-                    </div>
-                    <div class="bg-terminal border-terminal p-3">
-                        <p class="text-[9px] text-gray-500 uppercase">Cash Reserve</p>
-                        <p id="res-remain" class="text-lg mono text-white">--</p>
-                    </div>
+
+                <div class="bg-terminal border-terminal p-4 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase mb-1 font-bold">Capital Utilization Ratio</p>
+                    <p id="res-ratio" class="text-2xl mono text-white font-black tracking-tighter">--</p>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 bg-terminal border-terminal overflow-hidden">
-            <div class="bg-black/40 p-2 text-[10px] font-bold text-gray-500 flex justify-between">
-                <span>INTEL_LOG_HISTORY</span>
-                <span>AUTO_RECOVERY: ON</span>
+        <div class="mt-4 bg-terminal border-terminal">
+            <div class="bg-gray-900/50 p-2 text-[9px] font-black text-gray-500 flex justify-between">
+                <span>INTEL_LOG_STREAM</span>
+                <button onclick="clearHistory()" class="text-rose-500 hover:text-rose-400">CLEAR_HISTORY</button>
             </div>
-            <div class="max-h-40 overflow-y-auto">
+            <div class="max-h-32 overflow-y-auto">
                 <table class="w-full text-left text-[11px] mono">
-                    <thead class="sticky top-0 bg-terminal text-gray-500 border-b border-gray-800">
-                        <tr>
-                            <th class="p-2">TIMESTAMP</th>
-                            <th class="p-2">ADR</th>
-                            <th class="p-2">3711_PRC</th>
-                            <th class="p-2">P/E</th>
-                            <th class="p-2">CMD</th>
-                        </tr>
+                    <thead class="sticky top-0 bg-terminal border-b border-gray-800 text-gray-500">
+                        <tr><th class="p-2">DATE</th><th class="p-2">ADR</th><th class="p-2">3711_P</th><th class="p-2">P/E</th><th class="p-2">SIG</th></tr>
                     </thead>
-                    <tbody id="history-body" class="divide-y divide-gray-900"></tbody>
+                    <tbody id="history-body"></tbody>
                 </table>
             </div>
         </div>
@@ -182,86 +154,64 @@
 
     <script>
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('h4_history') || '[]');
+        let history = JSON.parse(localStorage.getItem('h41_history') || '[]');
 
         function calculate() {
             if(!marketData) return;
-
             const capital = parseFloat(document.getElementById('input-capital').value);
             const roi = parseFloat(document.getElementById('input-roi').value) / 100;
             const p3711 = parseFloat(document.getElementById('input-price-3711').value);
             const p2330 = parseFloat(document.getElementById('input-price-2330').value);
-            
             document.getElementById('roi-val-display').innerText = (roi * 100).toFixed(0) + "%";
-            localStorage.setItem('h4_cap', capital);
-            localStorage.setItem('h4_roi', roi);
+            localStorage.setItem('h41_cap', capital);
+            localStorage.setItem('h41_roi', roi);
 
             const pe = (p3711 / marketData.eps_2026_est).toFixed(1);
-            const targetPrice = marketData.pe_target_high * marketData.eps_2026_est; // 340 approx
-            
-            // UI Updates
             document.getElementById('res-pe').innerText = pe + "X";
-            document.getElementById('res-3711-share').innerText = "1,000股";
             const cost3711 = 1000 * p3711;
             const remain = capital - cost3711;
-            document.getElementById('res-2330-share').innerText = remain > 0 ? Math.floor(remain / p2330) + "股" : "0股";
-            document.getElementById('res-target-price').innerText = (p3711 * (1 + roi)).toFixed(1);
-            document.getElementById('res-sl-price').innerText = (p3711 * 0.95).toFixed(1);
+            document.getElementById('res-3711-share').innerText = "1,000股";
+            document.getElementById('res-2330-share').innerText = remain > 0 ? Math.floor(remain / p2330) + " 股" : "預算不足";
+            document.getElementById('res-target-price').innerText = (p3711 * (1 + roi)).toFixed(1) + " 元";
+            document.getElementById('res-sl-price').innerText = (p3711 * 0.95).toFixed(1) + " 元";
             document.getElementById('res-ratio').innerText = ((cost3711 / capital) * 100).toFixed(1) + "%";
-            document.getElementById('res-remain').innerText = Math.max(0, remain).toLocaleString();
+            document.getElementById('res-remain').innerText = Math.max(0, remain).toLocaleString() + " TWD";
 
-            // Strategy Roadmap Logic
             const distP = ((p3711 / marketData.price_trigger) - 1) * 100;
             const distPE = ((pe / marketData.pe_target_high) - 1) * 100;
-            
             document.getElementById('target-p-label').innerText = marketData.price_trigger;
             document.getElementById('target-pe-label').innerText = marketData.pe_target_high;
             document.getElementById('dist-p-label').innerText = distP > 0 ? `距離: ${distP.toFixed(1)}%` : "READY";
             document.getElementById('dist-pe-label').innerText = distPE > 0 ? `距離: ${distPE.toFixed(1)}%` : "READY";
-            
-            document.getElementById('progress-p').style.width = Math.max(0, 100 - distP*5) + "%";
-            document.getElementById('progress-pe').style.width = Math.max(0, 100 - distPE*5) + "%";
+            document.getElementById('progress-p').style.width = Math.max(0, 100 - distP*4) + "%";
+            document.getElementById('progress-pe').style.width = Math.max(0, 100 - distPE*4) + "%";
 
-            // Status Update
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('action-text');
-            const desc = document.getElementById('action-desc');
-
-            if (p3711 <= 300) {
-                dot.className = "status-dot bg-rose-500 shadow-[0_0_10px_#fb7185]";
-                txt.innerText = "PIVOT: 2330 ALL-IN";
-            } else if (distP <= 0 || distPE <= 0) {
-                dot.className = "status-dot bg-emerald-500 shadow-[0_0_10px_#34d399]";
-                txt.innerText = "CMD: EXECUTE BUY";
-            } else {
-                dot.className = "status-dot bg-amber-500 shadow-[0_0_10px_#f59e0b]";
-                txt.innerText = `Waiting: -${distP.toFixed(1)}% Drop`;
-            }
+            if (p3711 <= 300) { dot.className = "status-dot bg-rose-500 shadow-[0_0_8px_#fb7185]"; txt.innerText = "PIVOT: 2330"; }
+            else if (distP <= 0 || distPE <= 0) { dot.className = "status-dot bg-emerald-500 shadow-[0_0_8px_#34d399]"; txt.innerText = "CMD: EXECUTE BUY"; }
+            else { dot.className = "status-dot bg-amber-500 shadow-[0_0_8px_#f59e0b]"; txt.innerText = "WAITING..."; }
         }
 
         function handleFileUpload(event) {
             const file = event.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const data = JSON.parse(e.target.result);
+                    const cleanString = e.target.result.trim();
+                    const data = JSON.parse(cleanString);
                     marketData = data;
+                    document.getElementById('load-status').innerText = "DATA_LOADED: TRUE";
+                    document.getElementById('load-status').className = "text-emerald-500";
                     updateMarketUI();
-                    
-                    // Add to history
                     if (!history.find(h => h.date === data.date)) {
-                        history.unshift({
-                            date: data.date,
-                            adr: data.tsm_adr,
-                            p3711: data.stock_3711_current,
-                            pe: (data.stock_3711_current / data.eps_2026_est).toFixed(1),
-                            cmd: data.stock_3711_current <= data.price_trigger ? "進場" : "潛伏"
-                        });
-                        localStorage.setItem('h4_history', JSON.stringify(history));
+                        history.unshift({ date: data.date, adr: data.tsm_adr, p3711: data.stock_3711_current, pe: (data.stock_3711_current / data.eps_2026_est).toFixed(1), sig: data.stock_3711_current <= data.price_trigger ? "進場" : "潛伏" });
+                        localStorage.setItem('h41_history', JSON.stringify(history));
                     }
                     renderHistory();
                     calculate();
-                } catch (err) { alert("JSON 讀取失敗"); }
+                } catch (err) { console.error(err); alert("JSON 解析失敗，請確保檔案內容正確。"); }
             };
             reader.readAsText(file);
         }
@@ -270,8 +220,6 @@
             document.getElementById('adr-price').innerText = "$" + marketData.tsm_adr;
             document.getElementById('adr-change').innerText = marketData.adr_change + "%";
             document.getElementById('adr-change').className = marketData.adr_change >= 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
-            document.getElementById('stock-3711-market').innerText = marketData.stock_3711_current + " 元";
-            document.getElementById('stock-2330-market').innerText = marketData.stock_2330_est + " 元";
             document.getElementById('sox-val').innerText = marketData.sox_val || "--";
             document.getElementById('nvda-val').innerText = marketData.nvda_val || "--";
             document.getElementById('input-price-3711').value = marketData.stock_3711_current;
@@ -279,24 +227,10 @@
         }
 
         function renderHistory() {
-            document.getElementById('history-body').innerHTML = history.map(h => `
-                <tr>
-                    <td class="p-2 text-gray-500">${h.date}</td>
-                    <td class="p-2">$${h.adr}</td>
-                    <td class="p-2">${h.p3711}</td>
-                    <td class="p-2 text-cyan-400">${h.pe}X</td>
-                    <td class="p-2"><span class="${h.cmd==='進場'?'text-emerald-400':'text-gray-600'}">${h.cmd}</span></td>
-                </tr>
-            `).join('');
+            document.getElementById('history-body').innerHTML = history.map(h => `<tr><td class="p-2 text-gray-500">${h.date}</td><td class="p-2">$${h.adr}</td><td class="p-2">${h.p3711}</td><td class="p-2 text-cyan-400">${h.pe}X</td><td class="p-2 text-[9px] uppercase ${h.sig==='進場'?'text-emerald-400':'text-gray-600'}">${h.sig}</td></tr>`).join('');
         }
 
-        function exportData() {
-            const blob = new Blob([JSON.stringify(marketData)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `hunter_session_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        }
+        function clearHistory() { if(confirm("確定刪除歷史紀錄？")) { history = []; localStorage.removeItem('h41_history'); renderHistory(); } }
     </script>
 </body>
 </html>
