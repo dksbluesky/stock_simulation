@@ -3,108 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>57萬獵人策略 v2.1 | 歷史追蹤版</title>
+    <title>HUNTER TERMINAL v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
-        .accent-gradient { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); }
-        .status-wait { color: #94a3b8; border: 1px solid #475569; }
-        .status-attack { background-color: #065f46; color: #34d399; border: 1px solid #059669; }
-        .status-alert { background-color: #7f1d1d; color: #f87171; border: 1px solid #dc2626; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        table { width: 100%; text-align: left; }
-        th { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; padding: 12px; border-bottom: 1px solid #334155; }
-        td { padding: 12px; border-bottom: 1px solid #1e293b; font-size: 0.875rem; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap');
+        :root { --bg: #050a14; --card: #0f172a; --accent: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: #e2e8f0; scroll-behavior: smooth; }
+        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .input-box { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(14, 165, 233, 0.2); transition: all 0.3s; }
+        .input-box:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); outline: none; }
+        .neo-btn { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); transition: transform 0.2s, box-shadow 0.2s; }
+        .neo-btn:active { transform: scale(0.95); }
+        .status-glow-wait { box-shadow: 0 0 20px rgba(148, 163, 184, 0.1); border-left: 4px solid #94a3b8; }
+        .status-glow-attack { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); border-left: 4px solid var(--success); }
+        .status-glow-alert { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); border-left: 4px solid var(--danger); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .mono { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 lg:p-10">
 
-    <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
             <div>
-                <h1 class="text-2xl font-bold accent-gradient bg-clip-text text-transparent">57萬獵人策略 v2.1</h1>
-                <p id="data-date" class="text-slate-400 text-sm">數據驅動決策系統</p>
+                <h1 class="text-4xl font-extrabold tracking-tighter text-white">HUNTER <span class="text-sky-500">TERMINAL</span> <span class="text-xs font-mono bg-sky-500/10 text-sky-500 px-2 py-1 rounded">v3.0.1</span></h1>
+                <p class="text-slate-500 text-sm mt-1 uppercase tracking-widest">Market Intelligence & Strategy Execution</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="clearHistory()" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900 px-3 py-2 rounded-lg text-xs transition">清除歷史</button>
-                <button onclick="toggleSyncModal()" class="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded-lg text-sm font-bold transition">同步最新情報</button>
+            <div class="flex gap-3">
+                <button onclick="toggleSyncModal()" class="neo-btn px-6 py-3 rounded-xl font-bold text-white shadow-lg shadow-sky-500/20">同步情報數據</button>
             </div>
         </header>
 
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-            <div class="card p-6 h-fit">
-                <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">戰略參數</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">總投資預算 (TWD)</label>
-                        <input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sky-400 font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">預期 ROI 目標: <span id="roi-val-display" class="text-sky-400">15%</span></label>
-                        <input type="range" id="input-roi" min="5" max="50" value="15" oninput="updateRoiDisplay()" onchange="calculate()" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card p-5">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">TSM ADR</p>
+                <div class="flex items-baseline gap-2">
+                    <span id="adr-price" class="text-2xl font-bold mono">--</span>
+                    <span id="adr-change" class="text-xs">--</span>
+                </div>
+            </div>
+            <div class="glass-card p-5">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">3711 Market Price</p>
+                <span id="stock-3711-market" class="text-2xl font-bold text-sky-400 mono">--</span>
+            </div>
+            <div class="glass-card p-5">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">2330 Est. Price</p>
+                <span id="stock-2330-market" class="text-2xl font-bold text-emerald-400 mono">--</span>
+            </div>
+            <div class="glass-card p-5">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">2026 EPS / ROI Goal</p>
+                <div class="flex items-baseline gap-2">
+                    <span id="eps-val" class="text-2xl font-bold mono">14.53</span>
+                    <span id="roi-badge" class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8 mb-10">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6">
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-sky-500 rounded-full"></span> 戰略參數設定
+                    </h2>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-2 uppercase font-bold">總預算 (Capital TWD)</label>
+                            <input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full input-box rounded-lg p-3 text-white font-bold mono">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-xs text-slate-500 mb-2 uppercase font-bold">
+                                預期 ROI 目標 <span id="roi-val-display" class="text-sky-400">15%</span>
+                            </label>
+                            <input type="range" id="input-roi" min="5" max="50" value="15" oninput="updateRoiDisplay()" onchange="calculate()" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                        </div>
+                        <div class="pt-4 border-t border-slate-800">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">建議進場價格 (可修改)</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 mb-1">3711 進場價</label>
+                                    <input type="number" id="input-price-3711" step="0.1" onchange="calculate()" class="w-full input-box rounded-lg p-2 text-sm text-sky-400 mono font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 mb-1">2330 買入價</label>
+                                    <input type="number" id="input-price-2330" step="0.1" onchange="calculate()" class="w-full input-box rounded-lg p-2 text-sm text-emerald-400 mono font-bold">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="md:col-span-2 space-y-6">
-                <div id="status-card" class="status-wait rounded-xl p-6 text-center transition-all duration-500">
-                    <p class="text-xs uppercase tracking-widest mb-1 opacity-80">決策指令</p>
-                    <h3 id="action-text" class="text-3xl font-black mb-2 italic">等待同步</h3>
-                    <p id="action-desc" class="text-xs">請貼入 Gemini 提供的 Intelligence Code</p>
+            <div class="lg:col-span-8 space-y-6">
+                <div id="status-card" class="glass-card p-8 transition-all duration-500 status-glow-wait">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="text-center md:text-left">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-2">獵人策略引擎指令</p>
+                            <h3 id="action-text" class="text-5xl font-black italic text-white tracking-tight mb-2">WAITING...</h3>
+                            <p id="action-desc" class="text-slate-400 text-sm font-light">等待讀取最新市場情報以啟動運算</p>
+                        </div>
+                        <div class="h-24 w-px bg-slate-800 hidden md:block"></div>
+                        <div class="flex flex-col items-center">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">當前 Forward P/E</p>
+                            <span id="res-pe" class="text-5xl font-black mono text-sky-500">--</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card p-4">
-                        <p class="text-slate-400 text-[10px] uppercase">TSM ADR</p>
-                        <p id="adr-price" class="text-lg font-bold">--</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-card p-6 border-b-2 border-sky-500/50">
+                        <p class="text-slate-500 text-[10px] font-bold uppercase mb-2">3711 成本 (1張)</p>
+                        <p id="res-3711-cost" class="text-xl font-bold mono text-white">--</p>
+                        <p class="text-[10px] text-slate-500 mt-1">佔總資產 <span id="res-3711-ratio">0</span>%</p>
                     </div>
-                    <div class="card p-4">
-                        <p class="text-slate-400 text-[10px] uppercase">3711 P/E</p>
-                        <p id="res-pe" class="text-lg font-bold text-sky-400">--</p>
+                    <div class="glass-card p-6 border-b-2 border-emerald-500/50">
+                        <p class="text-slate-500 text-[10px] font-bold uppercase mb-2">2330 可買零股</p>
+                        <p id="res-2330-share" class="text-xl font-bold mono text-white">--</p>
+                        <p class="text-[10px] text-slate-500 mt-1">剩餘現金 <span id="res-remain">0</span></p>
                     </div>
-                    <div class="card p-4">
-                        <p class="text-slate-400 text-[10px] uppercase">目標出場價</p>
-                        <p id="res-target-price" class="text-lg font-bold text-emerald-400">--</p>
-                    </div>
-                    <div class="card p-4">
-                        <p class="text-slate-400 text-[10px] uppercase">2330 零股</p>
-                        <p id="res-2330-share" class="text-lg font-bold">--</p>
+                    <div class="glass-card p-6 border-b-2 border-purple-500/50">
+                        <p class="text-slate-500 text-[10px] font-bold uppercase mb-2">目標出場價格</p>
+                        <p id="res-target-price" class="text-xl font-bold mono text-white">--</p>
+                        <p class="text-[10px] text-slate-500 mt-1">預計獲利 <span id="res-profit">0</span></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card overflow-hidden">
-            <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="font-bold">歷史趨勢追蹤 (Intelligence Log)</h2>
-                <span class="text-xs text-slate-500">自動記錄每日變化</span>
+        <div class="glass-card overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="font-bold text-slate-300">INTELLIGENCE HISTORY LOG</h2>
+                <button onclick="clearHistory()" class="text-[10px] font-bold text-red-500 hover:text-red-400 tracking-widest uppercase">Clear Logs</button>
             </div>
             <div class="overflow-x-auto">
-                <table id="history-table">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr>
-                            <th>日期</th>
-                            <th>ADR 價格</th>
-                            <th>ADR 漲跌</th>
-                            <th>3711 P/E</th>
-                            <th>決策指令</th>
+                        <tr class="bg-slate-900/50">
+                            <th class="p-4 text-[10px] font-black text-slate-500 uppercase">Timestamp</th>
+                            <th class="p-4 text-[10px] font-black text-slate-500 uppercase">ADR Price</th>
+                            <th class="p-4 text-[10px] font-black text-slate-500 uppercase">3711 Price</th>
+                            <th class="p-4 text-[10px] font-black text-slate-500 uppercase">P/E Ratio</th>
+                            <th class="p-4 text-[10px] font-black text-slate-500 uppercase">Strategy</th>
                         </tr>
                     </thead>
-                    <tbody id="history-body">
+                    <tbody id="history-body" class="divide-y divide-slate-800/50">
                         </tbody>
                 </table>
             </div>
         </div>
 
-        <div id="sync-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-            <div class="card w-full max-w-lg p-6">
-                <h2 class="text-xl font-bold mb-2">同步市場情報</h2>
-                <textarea id="json-input" rows="8" class="w-full bg-slate-900 border border-slate-700 rounded p-4 font-mono text-xs text-emerald-400 mb-4" placeholder="貼入 JSON 代碼..."></textarea>
-                <div class="flex gap-3">
-                    <button onclick="processJson()" class="flex-1 bg-sky-600 hover:bg-sky-500 py-3 rounded-xl font-bold">更新並記錄</button>
-                    <button onclick="toggleSyncModal()" class="flex-1 bg-slate-700 py-3 rounded-xl">取消</button>
+        <div id="sync-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
+            <div class="glass-card w-full max-w-xl p-8 border-sky-500/30">
+                <h2 class="text-2xl font-black mb-2 text-white">SYNC INTELLIGENCE</h2>
+                <p class="text-sm text-slate-500 mb-6">將每日報告中的 JSON 代碼貼入下方以更新終端機。</p>
+                <textarea id="json-input" rows="10" class="w-full bg-black/50 border border-slate-800 rounded-xl p-4 font-mono text-xs text-sky-400 mb-6 focus:border-sky-500 outline-none" placeholder='{"date": "2026-02-14", ...}'></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="processJson()" class="neo-btn py-4 rounded-xl font-black text-white uppercase tracking-widest">Update Data</button>
+                    <button onclick="toggleSyncModal()" class="bg-slate-800 hover:bg-slate-700 py-4 rounded-xl font-bold text-slate-400 uppercase tracking-widest">Cancel</button>
                 </div>
             </div>
         </div>
@@ -112,67 +166,133 @@
 
     <script>
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('hunter_history') || '[]');
+        let history = JSON.parse(localStorage.getItem('hunter_v3_history') || '[]');
 
         window.onload = () => {
+            // Restore Settings
             if(localStorage.getItem('hunter_capital')) document.getElementById('input-capital').value = localStorage.getItem('hunter_capital');
             if(localStorage.getItem('hunter_roi')) document.getElementById('input-roi').value = localStorage.getItem('hunter_roi');
             updateRoiDisplay();
             renderHistory();
             
-            const lastData = localStorage.getItem('hunter_last_data');
+            // Restore Last Data
+            const lastData = localStorage.getItem('hunter_last_data_v3');
             if(lastData) {
                 marketData = JSON.parse(lastData);
+                syncToInputs();
                 updateMarketUI();
                 calculate();
             }
         };
 
         function toggleSyncModal() { document.getElementById('sync-modal').classList.toggle('hidden'); }
-        function updateRoiDisplay() { document.getElementById('roi-val-display').innerText = document.getElementById('input-roi').value + '%'; }
+        function updateRoiDisplay() { 
+            const val = document.getElementById('input-roi').value;
+            document.getElementById('roi-val-display').innerText = val + '%'; 
+            document.getElementById('roi-badge').innerText = 'ROI GOAL: ' + val + '%';
+        }
 
         function processJson() {
             const raw = document.getElementById('json-input').value;
             try {
                 const newData = JSON.parse(raw);
                 marketData = newData;
-                localStorage.setItem('hunter_last_data', raw);
+                localStorage.setItem('hunter_last_data_v3', raw);
                 
-                // Add to history if date is new
-                const exists = history.find(h => h.date === newData.date);
-                if (!exists) {
+                // Sync to editable inputs
+                syncToInputs();
+                
+                // Save to history (only if date is unique)
+                if (!history.find(h => h.date === newData.date)) {
                     const pe = (newData.stock_3711_current / newData.eps_2026_est).toFixed(1);
-                    let action = "潛伏";
-                    if (pe <= 23.5) action = "進場";
-                    if (newData.stock_3711_current <= 300) action = "轉向2330";
-                    
                     history.unshift({
                         date: newData.date,
                         adr: newData.tsm_adr,
-                        change: newData.adr_change,
+                        price3711: newData.stock_3711_current,
                         pe: pe,
-                        action: action
+                        action: pe <= 23.5 ? '進場' : '潛伏'
                     });
-                    localStorage.setItem('hunter_history', JSON.stringify(history));
+                    localStorage.setItem('hunter_v3_history', JSON.stringify(history));
                 }
-                
+
                 updateMarketUI();
                 calculate();
                 renderHistory();
                 toggleSyncModal();
-            } catch (e) { alert("格式錯誤，請重新複製。"); }
+            } catch (e) { alert("JSON 格式錯誤，請重新複製完整代碼。"); }
+        }
+
+        function syncToInputs() {
+            if(!marketData) return;
+            document.getElementById('input-price-3711').value = marketData.stock_3711_current;
+            document.getElementById('input-price-2330').value = marketData.stock_2330_est;
+        }
+
+        function updateMarketUI() {
+            if(!marketData) return;
+            document.getElementById('adr-price').innerText = "$" + marketData.tsm_adr;
+            const change = marketData.adr_change;
+            const changeEl = document.getElementById('adr-change');
+            changeEl.innerText = (change >= 0 ? "+" : "") + change + "%";
+            changeEl.className = "text-xs font-bold " + (change >= 0 ? "text-emerald-400" : "text-red-400");
+            document.getElementById('stock-3711-market').innerText = marketData.stock_3711_current;
+            document.getElementById('stock-2330-market').innerText = marketData.stock_2330_est;
+        }
+
+        function calculate() {
+            if(!marketData) return;
+
+            const capital = parseFloat(document.getElementById('input-capital').value);
+            const roi = parseFloat(document.getElementById('input-roi').value) / 100;
+            const p3711 = parseFloat(document.getElementById('input-price-3711').value);
+            const p2330 = parseFloat(document.getElementById('input-price-2330').value);
+
+            localStorage.setItem('hunter_capital', capital);
+            localStorage.setItem('hunter_roi', document.getElementById('input-roi').value);
+
+            // Calculation
+            const pe = (p3711 / marketData.eps_2026_est).toFixed(1);
+            const cost3711 = 1000 * p3711;
+            const remain = capital - cost3711;
+            const shares2330 = remain > 0 ? Math.floor(remain / p2330) : 0;
+            const target = (p3711 * (1 + roi)).toFixed(1);
+
+            // Update UI
+            document.getElementById('res-pe').innerText = pe + "x";
+            document.getElementById('res-3711-cost').innerText = cost3711.toLocaleString();
+            document.getElementById('res-3711-ratio').innerText = ((cost3711/capital)*100).toFixed(1);
+            document.getElementById('res-2330-share').innerText = shares2330 + " 股";
+            document.getElementById('res-remain').innerText = remain.toLocaleString();
+            document.getElementById('res-target-price').innerText = target + " 元";
+            document.getElementById('res-profit').innerText = "+" + (target - p3711).toFixed(1);
+
+            // Decision Logic
+            const sc = document.getElementById('status-card');
+            const at = document.getElementById('action-text');
+            const ad = document.getElementById('action-desc');
+
+            if (p3711 <= 300) {
+                sc.className = "glass-card p-8 transition-all duration-500 status-glow-alert";
+                at.innerText = "PIVOT: 2330"; ad.innerText = "系統性崩盤警告，放棄 3711，全面救援台積電。";
+            } else if (pe <= 23.5) {
+                sc.className = "glass-card p-8 transition-all duration-500 status-glow-attack";
+                at.innerText = "ATTACK! 進場"; ad.innerText = "已進入價值區間，建議按計畫執行買入作業。";
+            } else {
+                sc.className = "glass-card p-8 transition-all duration-500 status-glow-wait";
+                at.innerText = "WAITING... 潛伏"; ad.innerText = "估值過熱，獵人請保持耐心，靜待回檔。";
+            }
         }
 
         function renderHistory() {
             const body = document.getElementById('history-body');
             body.innerHTML = history.map(h => `
-                <tr>
-                    <td class="font-mono text-slate-400">${h.date}</td>
-                    <td class="font-bold">$${h.adr}</td>
-                    <td class="${h.change >= 0 ? 'text-emerald-400' : 'text-red-400'}">${h.change}%</td>
-                    <td class="text-sky-400 font-bold">${h.pe}x</td>
-                    <td>
-                        <span class="px-2 py-1 rounded text-[10px] ${h.action === '進場' ? 'bg-emerald-900 text-emerald-300' : h.action === '轉向2330' ? 'bg-red-900 text-red-300' : 'bg-slate-800 text-slate-400'}">
+                <tr class="hover:bg-white/5 transition">
+                    <td class="p-4 mono text-xs text-slate-500">${h.date}</td>
+                    <td class="p-4 mono font-bold">$${h.adr}</td>
+                    <td class="p-4 mono font-bold text-sky-400">${h.price3711}</td>
+                    <td class="p-4 mono font-bold text-white">${h.pe}x</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-bold ${h.action === '進場' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-700 text-slate-400'}">
                             ${h.action}
                         </span>
                     </td>
@@ -181,46 +301,10 @@
         }
 
         function clearHistory() {
-            if(confirm("確定要清除所有歷史紀錄嗎？")) {
+            if(confirm("Delete all history logs?")) {
                 history = [];
-                localStorage.removeItem('hunter_history');
+                localStorage.removeItem('hunter_v3_history');
                 renderHistory();
-            }
-        }
-
-        function updateMarketUI() {
-            if(!marketData) return;
-            document.getElementById('adr-price').innerText = "$" + marketData.tsm_adr;
-            document.getElementById('stock-3711-price-display')?.innerText = marketData.stock_3711_current + " 元";
-        }
-
-        function calculate() {
-            if(!marketData) return;
-            const capital = parseFloat(document.getElementById('input-capital').value);
-            const roi = parseFloat(document.getElementById('input-roi').value) / 100;
-            localStorage.setItem('hunter_capital', capital);
-            localStorage.setItem('hunter_roi', document.getElementById('input-roi').value);
-
-            const pe = (marketData.stock_3711_current / marketData.eps_2026_est).toFixed(1);
-            document.getElementById('res-pe').innerText = pe + "x";
-            document.getElementById('res-target-price').innerText = (marketData.stock_3711_current * (1 + roi)).toFixed(1) + " 元";
-
-            const remain = capital - (1000 * marketData.stock_3711_current);
-            document.getElementById('res-2330-share').innerText = remain > 0 ? Math.floor(remain / marketData.stock_2330_est) + " 股" : "預算不足";
-
-            const sc = document.getElementById('status-card');
-            const at = document.getElementById('action-text');
-            const ad = document.getElementById('action-desc');
-
-            if (marketData.stock_3711_current <= 300) {
-                sc.className = "status-alert rounded-xl p-6 text-center transition-all";
-                at.innerText = "轉向 2330"; ad.innerText = "偵測到系統性風險，執行避險。";
-            } else if (pe <= 23.5) {
-                sc.className = "status-attack rounded-xl p-6 text-center transition-all";
-                at.innerText = "ATTACK! 進場"; ad.innerText = "符合價值區間，執行買入。";
-            } else {
-                sc.className = "status-wait rounded-xl p-6 text-center transition-all";
-                at.innerText = "WAITING 潛伏"; ad.innerText = "估值偏高，等待更好的 Entry。";
             }
         }
     </script>
