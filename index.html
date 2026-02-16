@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v5.5</title>
+    <title>HUNTER TERMINAL v5.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
-        :root { --bg: #0F172A; --card: #1E293B; --border: #334155; --amber-white: #FEF3C7; --blue: #3B82F6; --apple-green: #8ADE53; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--amber-white); font-size: 13px; margin: 0; overflow-x: hidden; }
+        :root { 
+            --bg: #0F172A; 
+            --card: #1E293B; 
+            --border: #334155; 
+            --amber-white: #FEF3C7; 
+            --blue: #3B82F6; 
+            --yellow: #FDE047; 
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--amber-white); font-size: 13px; margin: 0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .terminal-border { border: 1px solid var(--border); }
         .bg-card { background-color: var(--card); }
         input { background: #000; border: 1px solid var(--border); color: var(--blue); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; }
-        .tab-btn { padding: 12px 24px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 11px; color: #64748B; cursor: pointer; }
-        .tab-btn.active { border-color: var(--apple-green); color: var(--amber-white); background: rgba(138, 222, 83, 0.05); }
+        .tab-btn { padding: 12px 28px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 11px; color: #64748B; cursor: pointer; letter-spacing: 1px; }
+        .tab-btn.active { border-color: var(--yellow); color: var(--amber-white); background: rgba(253, 224, 71, 0.05); }
         .btn-action { background: #334155; border: 1px solid #475569; padding: 8px 16px; border-radius: 6px; font-size: 11px; cursor: pointer; color: var(--amber-white); font-weight: bold; }
-        .btn-action:hover { border-color: var(--apple-green); }
-        .chart-container { position: relative; height: 320px; width: 100%; padding: 5px; }
+        .btn-action:hover { border-color: var(--yellow); }
+        .chart-container { position: relative; height: 320px; width: 100%; padding: 10px; }
     </style>
 </head>
 <body class="p-4">
@@ -27,7 +34,7 @@
     <div class="max-w-[1400px] mx-auto">
         <header class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-700 pb-0">
             <div class="flex items-center gap-8">
-                <span class="font-bold text-white tracking-tighter text-2xl italic">HUNTER_TERMINAL <span class="text-xs font-mono not-italic text-slate-500">v5.5</span></span>
+                <span class="font-bold text-white tracking-tighter text-2xl italic">HUNTER_TERMINAL <span class="text-xs font-mono not-italic text-slate-500">v5.6</span></span>
                 <nav class="flex">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">[ DECISION_CORE ]</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">[ TREND_RADAR ]</button>
@@ -35,7 +42,7 @@
             </div>
             <div class="flex items-center gap-4 pb-2">
                 <div class="text-[10px] mono text-slate-500 text-right uppercase">
-                    <span id="load-status">PERSISTENCE: ON</span><br>
+                    <span id="load-status">DATA: STANDBY</span><br>
                     <span id="last-sync-date">REFRESH: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
@@ -46,7 +53,7 @@
         <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5">
             <div class="md:col-span-3 space-y-4">
                 <section class="bg-card terminal-border p-5 rounded-lg shadow-2xl">
-                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-5 tracking-widest border-b border-slate-700 pb-2">Real-time Metrics</h2>
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-5 tracking-widest border-b border-slate-700 pb-2">Market Intelligence</h2>
                     <div class="space-y-5">
                         <div class="flex justify-between items-center">
                             <span class="text-xs">TSM ADR</span>
@@ -54,16 +61,16 @@
                         </div>
                         <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono text-white font-bold">--</span></div>
                         <div class="flex justify-between text-xs text-slate-400"><span>3711 Close</span><span id="stock-3711-market" class="mono text-white font-bold">--</span></div>
-                        <div class="flex justify-between items-center pt-3 border-t border-slate-700 text-[#8ADE53]">
-                            <span class="text-[10px] font-bold">PREMIUM %</span><span id="premium-val" class="mono font-bold text-xl">--</span>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-700 text-yellow-400">
+                            <span class="text-[10px] font-bold">PREMIUM RATIO</span><span id="premium-val" class="mono font-bold text-xl">--</span>
                         </div>
                     </div>
                 </section>
                 <section class="bg-card terminal-border p-5 rounded-lg">
-                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest italic">User Control</h2>
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-widest italic">Budget Control</h2>
                     <div class="space-y-4">
                         <div><label class="block text-[10px] text-slate-500 mb-1">CAPITAL (TWD)</label><input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full"></div>
-                        <div><label class="flex justify-between text-[10px] text-slate-500 mb-1">ROI Goal <span id="roi-val-display" class="text-[#8ADE53]">15%</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#8ADE53]"></div>
+                        <div><label class="flex justify-between text-[10px] text-slate-500 mb-1 uppercase">ROI Goal <span id="roi-val-display" class="text-yellow-400">15%</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div>
                     </div>
                 </section>
             </div>
@@ -71,38 +78,35 @@
             <div class="md:col-span-5">
                 <section class="bg-card terminal-border p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
                     <div>
-                        <h2 class="text-[10px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-center text-slate-400">Ambush Target Settings</h2>
+                        <h2 class="text-[10px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-center">Ambush Targets</h2>
                         <div class="grid grid-cols-2 gap-8 mb-10">
                             <div class="text-center">
                                 <p class="text-[10px] text-slate-400 uppercase font-bold mb-4">3711 目標價</p>
                                 <input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none">
-                                <p id="dist-3711" class="text-[11px] mt-3 mono text-slate-500 font-bold">--</p>
+                                <p id="dist-3711" class="text-[11px] mt-3 mono text-slate-500 font-bold">GAP: --</p>
                             </div>
                             <div class="text-center border-l border-slate-700/50 pl-4">
-                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-4">2330 修正價</p>
-                                <input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center text-[#8ADE53] border-none">
-                                <p id="dist-2330" class="text-[11px] mt-3 mono text-slate-500 font-bold">--</p>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-4 text-yellow-400">2330 修正價</p>
+                                <input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400">
+                                <p id="dist-2330" class="text-[11px] mt-3 mono text-slate-500 font-bold">GAP: --</p>
                             </div>
                         </div>
                     </div>
                     <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span>
-                            <span id="action-text" class="text-xl font-bold uppercase italic">Standby</span>
-                        </div>
-                        <p id="action-desc" class="text-[10px] text-slate-500">Awaiting Intelligence Sync...</p>
+                        <div class="flex items-center gap-3"><span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span><span id="action-text" class="text-xl font-bold uppercase italic">Analyzing</span></div>
+                        <p id="action-desc" class="text-[10px] text-slate-500 uppercase font-bold">Monitoring Correction...</p>
                     </div>
                 </section>
             </div>
 
             <div class="md:col-span-4 space-y-4">
-                <section class="bg-card terminal-border p-6 rounded-lg">
-                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic">Hunter Projections</h2>
+                <section class="bg-card terminal-border p-5 rounded-lg">
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic">Hunter Projection</h2>
                     <div class="space-y-6">
-                        <div class="flex justify-between items-center"><span class="text-slate-400">3711 Fwd P/E</span><span id="res-pe" class="mono text-[#8ADE53] font-bold text-xl">--</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-400">3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 font-bold text-xl">--</span></div>
                         <div class="flex justify-between items-center"><span class="text-slate-400">2330 Odd Lots</span><span id="res-2330-share" class="mono text-white font-bold">--</span></div>
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-700/50"><span class="text-slate-400">Target ROI Price</span><span id="res-target-roi" class="mono text-white font-bold">--</span></div>
-                        <div class="flex justify-between items-center border-t border-slate-700 pt-4 text-slate-500 font-bold uppercase"><span>Capital Used</span><span id="res-used" class="mono text-white">--</span></div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700/50"><span class="text-slate-400">Target ROI Exit</span><span id="res-target-roi" class="mono text-white font-bold">--</span></div>
+                        <div class="flex justify-between items-center border-t border-slate-700 pt-4 text-slate-500 font-bold"><span>TOTAL CAPITAL USED</span><span id="res-used" class="mono text-white">--</span></div>
                     </div>
                 </section>
             </div>
@@ -111,29 +115,29 @@
         <main id="view-radar" class="hidden space-y-5">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div class="bg-card terminal-border p-5 rounded-lg">
-                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 italic tracking-widest">3711 修正空間雷達 (%)</h2>
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 italic tracking-widest text-center">3711 Radar (Market vs Target)</h2>
                     <div class="chart-container"><canvas id="chart-3711"></canvas></div>
                 </div>
                 <div class="bg-card terminal-border p-5 rounded-lg">
-                    <h2 class="text-[10px] font-black text-gray-500 uppercase mb-4 italic tracking-widest">2330 修正空間雷達 (%)</h2>
+                    <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 italic tracking-widest text-center">2330 Radar (Market vs Target)</h2>
                     <div class="chart-container"><canvas id="chart-2330"></canvas></div>
                 </div>
             </div>
             <div class="bg-card terminal-border p-5 rounded-lg">
-                <h2 class="text-[10px] font-black text-[#8ADE53] uppercase mb-2 italic">溢價波動趨勢 (Premium Trend)</h2>
+                <h2 class="text-[10px] font-black text-yellow-400 uppercase mb-2 italic tracking-widest">Premium Volatility Intensity</h2>
                 <div class="chart-container" style="height: 120px;"><canvas id="chart-premium"></canvas></div>
             </div>
         </main>
 
         <footer class="mt-6 bg-card terminal-border rounded-lg overflow-hidden">
             <div class="bg-slate-900 p-3 text-[10px] font-bold text-slate-500 flex justify-between uppercase">
-                <span>Hunter_Data_History</span>
-                <button onclick="clearHistory()" class="text-rose-500 hover:text-rose-400">Delete_Cache</button>
+                <span>Intelligence_Log_Stream</span>
+                <button onclick="clearHistory()" class="text-rose-400 hover:text-rose-300">Clear Cache</button>
             </div>
             <div class="max-h-32 overflow-y-auto">
                 <table class="w-full text-left text-xs mono">
                     <thead class="bg-slate-800 text-slate-500 uppercase text-[9px]">
-                        <tr><th class="p-3">DATE</th><th class="p-3">ADR</th><th class="p-3">2330_L</th><th class="p-3">3711_L</th><th class="p-3">PREMIUM</th><th class="p-3">STATUS</th></tr>
+                        <tr><th class="p-3">DATE</th><th class="p-3">ADR</th><th class="p-3">2330_L</th><th class="p-3">3711_L</th><th class="p-3">PREM</th><th class="p-3">STATUS</th></tr>
                     </thead>
                     <tbody id="history-body" class="divide-y divide-slate-800"></tbody>
                 </table>
@@ -142,35 +146,29 @@
     </div>
 
     <script>
-        // 註冊數據標籤插件
         Chart.register(ChartDataLabels);
-
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('HUNTER_V5_HISTORY') || '[]');
+        let history = JSON.parse(localStorage.getItem('HUNTER_V56_HISTORY') || '[]');
         let chartInstances = {};
 
         window.onload = () => {
             initCharts();
-            
-            // 恢復永久設定
-            if(localStorage.getItem('HUNTER_CAPITAL')) document.getElementById('input-capital').value = localStorage.getItem('HUNTER_CAPITAL');
-            if(localStorage.getItem('HUNTER_ROI')) document.getElementById('input-roi').value = localStorage.getItem('HUNTER_ROI');
-            if(localStorage.getItem('HUNTER_T3711')) document.getElementById('target-3711').value = localStorage.getItem('HUNTER_T3711');
-            if(localStorage.getItem('HUNTER_T2330')) document.getElementById('target-2330').value = localStorage.getItem('HUNTER_T2330');
+            // Restore Parameters
+            if(localStorage.getItem('H_CAP')) document.getElementById('input-capital').value = localStorage.getItem('H_CAP');
+            if(localStorage.getItem('H_ROI')) document.getElementById('input-roi').value = localStorage.getItem('H_ROI');
+            if(localStorage.getItem('H_T3711')) document.getElementById('target-3711').value = localStorage.getItem('H_T3711');
+            if(localStorage.getItem('H_T2330')) document.getElementById('target-2330').value = localStorage.getItem('H_T2330');
 
-            const lastData = localStorage.getItem('HUNTER_LAST_INTEL');
+            // Restore Last Data Snap
+            const lastData = localStorage.getItem('HUNTER_V56_LAST_DATA');
             if(lastData) {
                 marketData = JSON.parse(lastData);
-                document.getElementById('load-status').innerText = "PERSISTENCE: ACTIVE";
-                document.getElementById('load-status').className = "text-[#8ADE53]";
+                document.getElementById('load-status').innerText = "DATA: PERSISTED";
+                document.getElementById('load-status').className = "text-emerald-400";
                 updateMarketUI();
                 renderHistory();
                 calculate();
                 updateCharts();
-            } else {
-                // 初次使用預設值
-                document.getElementById('target-3711').value = 330;
-                document.getElementById('target-2330').value = 1850;
             }
         };
 
@@ -189,10 +187,10 @@
             const t3711 = parseFloat(document.getElementById('target-3711').value);
             const t2330 = parseFloat(document.getElementById('target-2330').value);
             
-            localStorage.setItem('HUNTER_CAPITAL', capital);
-            localStorage.setItem('HUNTER_ROI', roi * 100);
-            localStorage.setItem('HUNTER_T3711', t3711);
-            localStorage.setItem('HUNTER_T2330', t2330);
+            localStorage.setItem('H_CAP', capital);
+            localStorage.setItem('H_ROI', roi * 100);
+            localStorage.setItem('H_T3711', t3711);
+            localStorage.setItem('H_T2330', t2330);
 
             const pe = (t3711 / 14.53).toFixed(1);
             const cost3711 = t3711 * 1000;
@@ -216,13 +214,8 @@
 
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('action-text');
-            if (marketData.stock_3711_current <= t3711) { 
-                dot.style.backgroundColor = '#8ADE53'; 
-                txt.innerText="Execute Ambush"; txt.className = "text-[#8ADE53] text-xl font-bold italic";
-            } else { 
-                dot.style.backgroundColor = '#64748B'; 
-                txt.innerText="Lurking Area"; txt.className = "text-white text-xl font-bold italic";
-            }
+            if (marketData.stock_3711_current <= t3711) { dot.style.backgroundColor = '#FDE047'; txt.innerText="TARGET REACHED"; }
+            else { dot.style.backgroundColor = '#64748B'; txt.innerText="LURKING AREA"; }
         }
 
         function handleFileUpload(event) {
@@ -245,8 +238,9 @@
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                localStorage.setItem('HUNTER_LAST_INTEL', JSON.stringify(marketData));
-                localStorage.setItem('HUNTER_V5_HISTORY', JSON.stringify(history));
+                localStorage.setItem('HUNTER_V56_LAST_DATA', JSON.stringify(marketData));
+                localStorage.setItem('HUNTER_V56_HISTORY', JSON.stringify(history));
+                document.getElementById('load-status').innerText = "DATA: UPDATED";
                 updateMarketUI();
                 renderHistory();
                 calculate();
@@ -259,81 +253,61 @@
             if(!marketData) return;
             document.getElementById('adr-price').innerText = "$" + marketData.tsm_adr;
             document.getElementById('adr-change').innerText = (marketData.adr_change >= 0 ? '+' : '') + marketData.adr_change + "%";
-            document.getElementById('adr-change').className = "text-[11px] font-bold " + (marketData.adr_change >= 0 ? "text-[#8ADE53]" : "text-rose-400");
+            document.getElementById('adr-change').className = "text-[11px] font-bold " + (marketData.adr_change >= 0 ? "text-emerald-400" : "text-rose-400");
             document.getElementById('stock-2330-market').innerText = marketData.stock_2330_current;
             document.getElementById('stock-3711-market').innerText = marketData.stock_3711_current;
             document.getElementById('last-sync-date').innerText = "REFRESH: " + marketData.date;
         }
 
         function renderHistory() {
-            document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => `<tr class="hover:bg-slate-800"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 mono text-white">$${h.adr}</td><td class="p-3 mono">${h.p2330}</td><td class="p-3 mono">${h.p3711}</td><td class="p-3 mono text-[#8ADE53] font-bold">${h.premium.toFixed(1)}%</td><td class="p-3 text-[10px] text-green italic">SYNCED</td></tr>`).join('');
+            document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => `<tr class="hover:bg-slate-800"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 mono text-white">$${h.adr}</td><td class="p-3 mono">${h.p2330}</td><td class="p-3 mono">${h.p3711}</td><td class="p-3 mono text-yellow-400 font-bold">${h.premium.toFixed(1)}%</td><td class="p-3 text-[10px] text-emerald-400 italic">SYNCED</td></tr>`).join('');
         }
 
         function initCharts() {
-            const pillarConfig = () => ({
+            const config = () => ({
                 type: 'bar',
                 data: { labels: [], datasets: [
-                    { label: 'ADR 溢價空間', data: [], backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: '#3B82F6', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
-                    { label: '目標修正空間', data: [], backgroundColor: 'rgba(138, 222, 83, 0.4)', borderColor: '#8ADE53', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 }
+                    { label: 'Market Gap', data: [], backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: '#3B82F6', borderWidth: 1, borderRadius: 4 },
+                    { label: 'Ambush Target', data: [], backgroundColor: 'rgba(253, 224, 71, 0.4)', borderColor: '#FDE047', borderWidth: 1, borderRadius: 4 }
                 ]},
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { 
                         legend: { display: false },
-                        datalabels: {
-                            color: '#fff',
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: (value) => (value[1] ? value[1].toFixed(1) + '%' : ''),
-                            font: { size: 10, weight: 'bold', family: 'JetBrains Mono' }
-                        }
+                        datalabels: { color: '#fff', anchor: 'end', align: 'top', formatter: (v) => v[1].toFixed(1) + '%', font: { size: 10, weight: 'bold' } }
                     },
                     scales: { 
                         x: { grid: { color: '#1E293B' }, ticks: { font: { size: 9 }, color: '#64748B' } },
-                        y: { 
-                            grid: { color: '#334155' }, 
-                            ticks: { callback: value => value + '%', color: '#94A3B8', font: { size: 10 } } 
-                        }
+                        y: { grid: { color: '#334155' }, ticks: { callback: v => v + '%', color: '#94A3B8' } }
                     }
                 }
             });
-
-            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), pillarConfig());
-            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), pillarConfig());
+            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), config());
+            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), config());
             chartInstances.premium = new Chart(document.getElementById('chart-premium'), {
                 type: 'bar',
-                data: { labels: [], datasets: [{ backgroundColor: 'rgba(138, 222, 83, 0.2)', borderColor: '#8ADE53', borderWidth: 1, data: [] }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, datalabels: { display: false } }, 
-                    scales: { x: { display: false }, y: { grid: { color: '#1E293B' } } } 
-                }
+                data: { labels: [], datasets: [{ backgroundColor: 'rgba(253, 224, 71, 0.2)', borderColor: '#FDE047', borderWidth: 1, data: [] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1E293B' } } } }
             });
         }
 
         function updateCharts() {
             if (history.length === 0) return;
             const labels = history.map(h => h.date);
-            
-            // 3711 Chart
             chartInstances.c3711.data.labels = labels;
             chartInstances.c3711.data.datasets[0].data = history.map(h => [0, (h.adrConv * (h.p3711/h.p2330) / h.p3711 - 1) * 100]);
             chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (h.target3711 / h.p3711 - 1) * 100]);
             chartInstances.c3711.update();
-
-            // 2330 Chart
             chartInstances.c2330.data.labels = labels;
             chartInstances.c2330.data.datasets[0].data = history.map(h => [0, (h.adrConv / h.p2330 - 1) * 100]);
             chartInstances.c2330.data.datasets[1].data = history.map(h => [0, (h.target2330 / h.p2330 - 1) * 100]);
             chartInstances.c2330.update();
-
-            // Premium Chart
             chartInstances.premium.data.labels = labels;
             chartInstances.premium.data.datasets[0].data = history.map(h => h.premium);
             chartInstances.premium.update();
         }
 
-        function clearHistory() { if(confirm("確定刪除所有歷史紀錄與快取數據？")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if(confirm("Clear Station Data?")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
