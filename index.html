@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v6.4</title>
+    <title>HUNTER TERMINAL v6.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -16,20 +16,20 @@
         .bg-card { background-color: var(--card); }
         input { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; }
         
-        /* 手機標題自適應優化 */
-        .title-text { font-size: clamp(0.9rem, 4.5vw, 1.35rem); font-weight: 800; font-style: italic; white-space: nowrap; color: #FFF; letter-spacing: -0.02em; }
-        .tab-btn { padding: 8px 12px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 10px; color: #64748B; cursor: pointer; }
+        /* 手機標題自適應：防止切掉 */
+        .title-text { font-size: clamp(0.9rem, 4.5vw, 1.4rem); font-weight: 800; font-style: italic; white-space: nowrap; color: #FFF; letter-spacing: -0.02em; }
+        .tab-btn { padding: 10px 16px; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-size: 11px; color: #64748B; cursor: pointer; }
         .tab-btn.active { border-color: var(--yellow); color: var(--amber-white); background: rgba(253, 224, 71, 0.05); }
-        .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; color: var(--amber-white); font-weight: bold; }
+        .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; color: var(--amber-white); font-weight: bold; white-space: nowrap; }
         .chart-container { position: relative; height: 320px; width: 100%; margin-top: 10px; }
     </style>
 </head>
-<body class="p-2 sm:p-4">
+<body class="p-2 sm:p-5">
 
     <div class="max-w-[1400px] mx-auto">
         <header class="flex flex-col gap-3 sm:flex-row justify-between items-center mb-6 border-b border-slate-700 pb-2">
             <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                <span class="title-text">HUNTER_TERMINAL <span class="text-[9px] font-mono not-italic text-slate-500">v6.4</span></span>
+                <span class="title-text">HUNTER_TERMINAL <span class="text-[9px] font-mono not-italic text-slate-500">v6.5</span></span>
                 <nav class="flex w-full sm:w-auto justify-center bg-slate-900/40 rounded-lg p-1">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">RADAR</button>
@@ -37,87 +37,82 @@
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                 <div class="text-[9px] mono text-slate-500 uppercase text-right leading-tight">
-                    <span id="load-status">SYNC: ONLINE</span><br>
-                    <span id="last-sync-date">UP: --</span>
+                    <span id="load-status">SYNC: ACTIVE</span><br>
+                    <span id="last-sync-date">UPDATE: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL</button>
             </div>
         </header>
 
-        <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5">
             <div class="md:col-span-3 space-y-4">
-                <section class="bg-card terminal-border p-4 rounded-lg shadow-xl">
-                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic">Context</h2>
+                <section class="bg-card terminal-border p-5 rounded-lg shadow-2xl">
+                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-5 border-b border-slate-700 pb-2 italic">Intelligence Data</h2>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center"><span class="text-xs text-slate-400">TSM ADR</span><div class="text-right font-bold"><p id="adr-price" class="mono text-white text-lg">--</p><p id="adr-change" class="text-[10px]">--</p></div></div>
-                        <div class="flex justify-between text-xs"><span>2330 Close</span><span id="stock-2330-market" class="mono text-white">--</span></div>
-                        <div class="flex justify-between text-xs"><span>3711 Close</span><span id="stock-3711-market" class="mono text-white">--</span></div>
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 text-yellow-400 font-bold"><span class="text-[9px]">PREM %</span><span id="premium-val" class="mono text-lg">--</span></div>
+                        <div class="flex justify-between text-xs"><span>2330 Local</span><span id="stock-2330-market" class="mono text-white">--</span></div>
+                        <div class="flex justify-between text-xs"><span>3711 Local</span><span id="stock-3711-market" class="mono text-white">--</span></div>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-700 text-yellow-400 font-bold"><span class="text-[9px]">PREMIUM RATIO</span><span id="premium-val" class="mono text-xl">--</span></div>
                     </div>
                 </section>
                 <section class="bg-card terminal-border p-4 rounded-lg">
-                    <div class="space-y-3 text-xs font-bold">
-                        <div><label class="block text-slate-500 mb-1">CAPITAL</label><input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full"></div>
-                        <div><label class="flex justify-between text-slate-500 mb-1 uppercase">ROI Goal <span id="roi-val-display" class="text-yellow-400">15%</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full h-1 bg-slate-700 rounded-lg accent-yellow-400"></div>
+                    <div class="space-y-3 text-xs font-bold uppercase">
+                        <div><label class="block text-slate-500 mb-1">Total Capital</label><input type="number" id="input-capital" value="570000" onchange="calculate()" class="w-full"></div>
+                        <div><label class="flex justify-between text-slate-500 mb-1">ROI Goal <span id="roi-val-display" class="text-yellow-400">--</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full h-1 bg-slate-700 accent-yellow-400"></div>
                     </div>
                 </section>
             </div>
 
             <div class="md:col-span-5">
-                <section class="bg-card terminal-border p-5 rounded-lg h-full flex flex-col justify-between shadow-xl">
+                <section class="bg-card terminal-border p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
                     <div class="text-center">
-                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Target Locks</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><p class="text-[9px] text-slate-400 uppercase font-bold mb-2">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-3xl font-black text-center border-none"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">GAP: --</p></div>
-                            <div class="border-l border-slate-700 pl-2"><p class="text-[9px] text-slate-400 uppercase font-bold mb-2 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-3xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">GAP: --</p></div>
+                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-slate-400">Tactical Target Locks</h2>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none"><p id="dist-3711" class="text-[11px] mt-3 mono text-slate-500 font-bold uppercase">GAP: --</p></div>
+                            <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[11px] mt-3 mono text-slate-500 font-bold uppercase">GAP: --</p></div>
                         </div>
                     </div>
-                    <div class="bg-slate-900/50 p-3 rounded border border-slate-700 flex items-center justify-between mt-4"><div class="flex items-center gap-2"><span id="status-dot" class="w-2 h-2 rounded-full bg-slate-600"></span><span id="action-text" class="text-lg font-bold uppercase italic tracking-tighter">Ready</span></div><p id="action-desc" class="text-[9px] text-slate-500 font-bold uppercase italic">Persistence Active</p></div>
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 flex items-center justify-between mt-6"><div class="flex items-center gap-3"><span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span><span id="action-text" class="text-xl font-bold uppercase italic tracking-tighter">Ready</span></div><p id="action-desc" class="text-[9px] text-slate-500 font-bold uppercase">Memory Persistence On</p></div>
                 </section>
             </div>
 
             <div class="md:col-span-4 space-y-4">
-                <section class="bg-card terminal-border p-5 rounded-lg shadow-xl text-xs font-bold uppercase"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-5 border-b border-slate-700 pb-1 italic">Projection</h2><div class="space-y-6"><div class="flex justify-between items-center"><span class="text-slate-400">3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-lg font-bold">--</span></div><div class="flex justify-between items-center"><span class="text-slate-400">2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-4 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
+                <section class="bg-card terminal-border p-6 rounded-lg shadow-xl"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic">Outcome Projection</h2><div class="space-y-6 text-xs font-bold"><div class="flex justify-between items-center"><span class="text-slate-400 uppercase">3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span class="text-slate-400 uppercase">2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-5 text-slate-500 uppercase"><span>Capital In-Use</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
             </div>
         </main>
 
-        <main id="view-radar" class="hidden space-y-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-card terminal-border p-4 rounded-lg"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-2 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
-                <div class="bg-card terminal-border p-4 rounded-lg"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-2 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
+        <main id="view-radar" class="hidden space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="bg-card terminal-border p-5 rounded-lg"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
+                <div class="bg-card terminal-border p-5 rounded-lg"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
             </div>
-            <div class="bg-card terminal-border p-4 rounded-lg"><div class="chart-container" style="height: 100px;"><canvas id="chart-premium"></canvas></div></div>
+            <div class="bg-card terminal-border p-5 rounded-lg"><div class="chart-container" style="height: 110px;"><canvas id="chart-premium"></canvas></div></div>
         </main>
 
-        <footer class="mt-4 bg-card terminal-border rounded-lg overflow-hidden">
-            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>History Log Stream</span><button onclick="clearHistory()" class="text-rose-400 hover:text-rose-300">Clear Cache</button></div>
-            <div class="max-h-24 overflow-y-auto"><table class="w-full text-left text-[10px] mono"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-2">Date</th><th class="p-2">ADR</th><th class="p-2">2330</th><th class="p-2">3711</th><th class="p-2">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
+        <footer class="mt-6 bg-card terminal-border rounded-lg overflow-hidden shadow-2xl">
+            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>History Log Feed</span><button onclick="clearHistory()" class="text-rose-500 hover:text-rose-400">Reset System</button></div>
+            <div class="max-h-28 overflow-y-auto"><table class="w-full text-left text-[11px] mono border-collapse"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-3">Date</th><th class="p-3">ADR</th><th class="p-3">2330</th><th class="p-3">3711</th><th class="p-3">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
         </footer>
     </div>
 
     <script>
         Chart.register(ChartDataLabels);
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('H64_HISTORY') || '[]');
+        let history = JSON.parse(localStorage.getItem('H65_HISTORY') || '[]');
         let chartInstances = {};
 
         window.onload = () => {
             initCharts();
-            // Restore UI parameters
             ['input-capital', 'input-roi', 'target-3711', 'target-2330'].forEach(id => {
-                const val = localStorage.getItem('HV64_' + id);
+                const val = localStorage.getItem('HV65_' + id);
                 if(val) document.getElementById(id).value = val;
             });
-            // Restore last state
-            const last = localStorage.getItem('H64_SNAP');
+            const last = localStorage.getItem('H65_SNAP');
             if(last) {
                 marketData = JSON.parse(last);
                 document.getElementById('load-status').innerText = "STATION: PERSISTED";
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
-            } else {
-                if(!document.getElementById('target-3711').value) document.getElementById('target-3711').value = 330;
-                if(!document.getElementById('target-2330').value) document.getElementById('target-2330').value = 1850;
             }
         };
 
@@ -126,7 +121,7 @@
             document.getElementById('view-radar').classList.toggle('hidden', target !== 'radar');
             document.getElementById('tab-decide').classList.toggle('active', target === 'decide');
             document.getElementById('tab-radar').classList.toggle('active', target === 'radar');
-            if(target === 'radar') setTimeout(updateCharts, 100);
+            if(target === 'radar') setTimeout(updateCharts, 50);
         }
 
         function calculate() {
@@ -136,10 +131,10 @@
             let t3711 = parseFloat(document.getElementById('target-3711').value) || 330;
             let t2330 = parseFloat(document.getElementById('target-2330').value) || 1850;
 
-            localStorage.setItem('HV64_input-capital', cap);
-            localStorage.setItem('HV64_input-roi', roi * 100);
-            localStorage.setItem('HV64_target-3711', t3711);
-            localStorage.setItem('HV64_target-2330', t2330);
+            localStorage.setItem('HV65_input-capital', cap);
+            localStorage.setItem('HV65_input-roi', roi * 100);
+            localStorage.setItem('HV65_target-3711', t3711);
+            localStorage.setItem('HV65_target-2330', t2330);
 
             const s2330 = Math.floor((cap - (t3711 * 1000)) / t2330);
             const dist3711 = ((marketData.stock_3711_current / t3711) - 1) * 100;
@@ -182,8 +177,8 @@
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                localStorage.setItem('H64_SNAP', JSON.stringify(marketData));
-                localStorage.setItem('H64_HISTORY', JSON.stringify(history));
+                localStorage.setItem('H65_SNAP', JSON.stringify(marketData));
+                localStorage.setItem('H65_HISTORY', JSON.stringify(history));
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             };
             reader.readAsText(file);
@@ -217,17 +212,15 @@
                         tooltip: {
                             callbacks: {
                                 label: (ctx) => {
-                                    const val = Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw;
-                                    // 強制 Tooltip 小數點後 1 位
+                                    const val = (Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw) || 0;
                                     return ctx.dataset.label + ": " + (val >= 0 ? '+' : '') + Number(val).toFixed(1) + "%";
                                 }
                             }
                         },
                         datalabels: {
-                            display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 2,
+                            display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4,
                             formatter: (v) => {
-                                const val = Array.isArray(v) ? v[1] : v;
-                                // 強制 Data Label 小數點後 1 位
+                                const val = (Array.isArray(v) ? v[1] : v) || 0;
                                 return (val >= 0 ? '+' : '') + Number(val).toFixed(1) + '%';
                             },
                             font: { size: 10, weight: 'bold', family: 'JetBrains Mono' }
@@ -245,7 +238,7 @@
                 type: 'bar', data: { labels: [], datasets: [{ backgroundColor: 'rgba(253, 224, 71, 0.2)', data: [] }]},
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: (c) => "Premium: " + c.raw.toFixed(1) + "%" } } }, 
+                    plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: (c) => "Premium: " + (c.raw || 0).toFixed(1) + "%" } } }, 
                     scales: { x: { display: false }, y: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, callback: v => v.toFixed(0) + '%' } } } 
                 }
             });
@@ -267,7 +260,7 @@
             chartInstances.premium.update();
         }
 
-        function clearHistory() { if(confirm("確定刪除所有本地紀錄並重設？")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if(confirm("確定刪除所有本地紀錄並重設系統？")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
