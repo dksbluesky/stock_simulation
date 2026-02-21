@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v7.3</title>
+    <title>HUNTER TERMINAL v7.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -13,21 +13,20 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #FFF; font-size: 13px; margin: 0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .header-wrapper { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); }
-        .title-text { font-size: clamp(1rem, 5vw, 1.5rem); font-weight: 900; font-style: italic; color: #FFF; white-space: nowrap; }
+        .title-text { font-size: clamp(0.95rem, 4.5vw, 1.45rem); font-weight: 900; font-style: italic; color: #FFF; white-space: nowrap; letter-spacing: -0.02em; }
         @media (min-width: 768px) { .header-wrapper { flex-direction: row; justify-content: space-between; align-items: center; } }
-        .tab-btn { padding: 8px 16px; font-weight: 800; font-size: 11px; color: #64748B; border-bottom: 2px solid transparent; cursor: pointer; }
+        .tab-btn { padding: 10px 16px; font-weight: 800; font-size: 11px; color: #64748B; border-bottom: 2px solid transparent; cursor: pointer; }
         .tab-btn.active { color: var(--yellow); border-bottom-color: var(--yellow); background: rgba(253, 224, 71, 0.05); }
         .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; color: #FFF; font-weight: 700; cursor: pointer; }
         input { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; text-align: center; }
         .chart-container { position: relative; height: 320px; width: 100%; margin-top: 10px; }
-        .chart-macro { height: 150px; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
     <div class="max-w-[1400px] mx-auto">
         <header class="header-wrapper">
             <div class="flex flex-col sm:flex-row items-center gap-4">
-                <span class="title-text uppercase tracking-tighter">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.3</span></span>
+                <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.4</span></span>
                 <nav class="flex bg-slate-900/50 p-1 rounded-lg">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">RADAR</button>
@@ -35,7 +34,7 @@
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                 <div class="text-[9px] mono text-slate-500 text-right leading-tight uppercase">
-                    <span id="load-status">INTERACTIVE: ON</span><br><span id="last-sync-date">UPDATE: --</span>
+                    <span id="load-status">AUTO_HEAL: ON</span><br><span id="last-sync-date">UPDATE: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL</button>
@@ -45,7 +44,7 @@
         <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5 mt-4">
             <div class="md:col-span-3 space-y-4">
                 <section class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
-                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic">Real-Time Data</h2>
+                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic">Real-Time Context</h2>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center"><span class="text-xs">TSM ADR</span><div class="text-right font-bold"><p id="adr-price" class="mono text-lg">--</p><p id="adr-change" class="text-[10px]">--</p></div></div>
                         <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono">--</span></div>
@@ -62,7 +61,7 @@
             <div class="md:col-span-5">
                 <section class="bg-card border border-slate-700 p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
                     <div class="text-center">
-                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Target Positioning</h2>
+                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Tactical Targeting</h2>
                         <div class="grid grid-cols-2 gap-8">
                             <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none focus:ring-0"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 uppercase font-bold">Gap: --</p></div>
                             <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 uppercase font-bold">Gap: --</p></div>
@@ -78,8 +77,8 @@
                 </section>
             </div>
 
-            <div class="md:col-span-4">
-                <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center">Tactical Projection</h2><div class="space-y-6 text-xs uppercase"><div class="flex justify-between items-center"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
+            <div class="md:col-span-4 space-y-4">
+                <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center">Execution Forecast</h2><div class="space-y-6 text-xs uppercase"><div class="flex justify-between items-center"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
             </div>
         </main>
 
@@ -89,13 +88,13 @@
                 <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
             </div>
             <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
-                <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX (USD/TWD) & VIX Index</h2>
-                <div class="chart-container chart-macro"><canvas id="chart-macro"></canvas></div>
+                <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX & VIX Index</h2>
+                <div class="chart-container" style="height: 150px;"><canvas id="chart-macro"></canvas></div>
             </div>
         </main>
 
         <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden shadow-2xl">
-            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Historical Stream</span><button onclick="clearHistory()" class="text-rose-400 font-bold hover:text-rose-200">Reset System</button></div>
+            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Intelligence Feed</span><button onclick="clearHistory()" class="text-rose-400 font-bold hover:text-rose-200">Reset System</button></div>
             <div class="max-h-28 overflow-y-auto"><table class="w-full text-left text-[11px] mono border-collapse"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-3">Date</th><th class="p-3">ADR</th><th class="p-3">2330</th><th class="p-3">FX</th><th class="p-3">VIX</th><th class="p-3">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
         </footer>
     </div>
@@ -103,19 +102,32 @@
     <script>
         Chart.register(ChartDataLabels);
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('HT_V73_HISTORY') || '[]');
+        let history = JSON.parse(localStorage.getItem('HT_V74_HISTORY') || '[]');
         let chartInstances = {};
 
         window.onload = () => {
             initCharts();
-            document.getElementById('input-capital').value = localStorage.getItem('HT_V73_CAP') || '570000';
-            document.getElementById('input-roi').value = localStorage.getItem('HT_V73_ROI') || '15';
-            document.getElementById('target-3711').value = localStorage.getItem('HT_V73_T3711') || '330';
-            document.getElementById('target-2330').value = localStorage.getItem('HT_V73_T2330') || '1850';
+            
+            // 恢復與修復目標值
+            document.getElementById('input-capital').value = localStorage.getItem('HT_V74_CAP') || localStorage.getItem('HT_V72_CAP') || '570000';
+            document.getElementById('input-roi').value = localStorage.getItem('HT_V74_ROI') || localStorage.getItem('HT_V72_ROI') || '15';
+            document.getElementById('target-3711').value = localStorage.getItem('HT_V74_T3711') || localStorage.getItem('HT_V72_T3711') || '330';
+            document.getElementById('target-2330').value = localStorage.getItem('HT_V74_T2330') || localStorage.getItem('HT_V72_T2330') || '1850';
 
-            const last = localStorage.getItem('HT_V73_SNAP');
+            const last = localStorage.getItem('HT_V74_SNAP') || localStorage.getItem('HT_V72_SNAP');
             if(last) {
                 marketData = JSON.parse(last);
+                // 自動修補欄位
+                marketData.usd_twd = marketData.usd_twd || 31.54;
+                marketData.vix = marketData.vix || 19.0;
+                
+                // 自動修補歷史數據
+                history = history.map(h => ({
+                    ...h,
+                    fx: h.fx || 31.54,
+                    vix: h.vix || 19.0
+                }));
+                
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             }
         };
@@ -135,10 +147,10 @@
             const t3711 = parseFloat(document.getElementById('target-3711').value) || 330;
             const t2330 = parseFloat(document.getElementById('target-2330').value) || 1850;
 
-            localStorage.setItem('HT_V73_CAP', cap);
-            localStorage.setItem('HT_V73_ROI', roi);
-            localStorage.setItem('HT_V73_T3711', t3711);
-            localStorage.setItem('HT_V73_T2330', t2330);
+            localStorage.setItem('HT_V74_CAP', cap);
+            localStorage.setItem('HT_V74_ROI', roi);
+            localStorage.setItem('HT_V74_T3711', t3711);
+            localStorage.setItem('HT_V74_T2330', t2330);
 
             const s2330 = Math.floor((cap - (t3711 * 1000)) / t2330);
             const d3711 = ((marketData.stock_3711_current / t3711) - 1) * 100;
@@ -155,10 +167,10 @@
             const p = ((marketData.tsm_adr / 5 * fx / marketData.stock_2330_current) - 1) * 100;
             document.getElementById('premium-val').innerText = p.toFixed(1) + "%";
             document.getElementById('fx-display').innerText = fx.toFixed(2);
-            document.getElementById('vix-display').innerText = marketData.vix ? marketData.vix.toFixed(1) : '--';
+            document.getElementById('vix-display').innerText = marketData.vix.toFixed(1);
             
             const dot = document.getElementById('status-dot');
-            if (marketData.stock_3711_current <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: EXECUTE"; }
+            if (marketData.stock_3711_current <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: BUY"; }
             else { dot.style.backgroundColor = '#64748B'; document.getElementById('action-text').innerText = "LURKING"; }
         }
 
@@ -169,13 +181,21 @@
                 const items = Array.isArray(data) ? data : [data];
                 items.forEach(i => {
                     if (!history.find(h => h.date === i.date)) {
-                        history.push({ date: i.date, adr: i.tsm_adr, p2330: i.stock_2330_current || 1915, p3711: i.stock_3711_current || 354.5, fx: i.usd_twd || 31.54, vix: i.vix || 19.0 });
+                        history.push({ 
+                            date: i.date, adr: i.tsm_adr, 
+                            p2330: i.stock_2330_current || 1915, 
+                            p3711: i.stock_3711_current || 354.5, 
+                            fx: i.usd_twd || 31.54, 
+                            vix: i.vix || 19.0 
+                        });
                     }
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                localStorage.setItem('HT_V73_SNAP', JSON.stringify(marketData));
-                localStorage.setItem('HT_V73_HISTORY', JSON.stringify(history));
+                marketData.usd_twd = marketData.usd_twd || 31.54;
+                marketData.vix = marketData.vix || 19.0;
+                localStorage.setItem('HT_V74_SNAP', JSON.stringify(marketData));
+                localStorage.setItem('HT_V74_HISTORY', JSON.stringify(history));
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             };
             r.readAsText(e.target.files[0]);
@@ -192,7 +212,7 @@
         function renderHistory() {
             document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
                 const pr = ((h.adr / 5 * h.fx / h.p2330) - 1) * 100;
-                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white font-bold">$${h.adr.toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${h.fx.toFixed(2)}</td><td class="p-3 text-rose-400">${h.vix.toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${pr.toFixed(1)}%</td></tr>`
+                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${h.adr.toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${h.fx.toFixed(2)}</td><td class="p-3 text-rose-400">${h.vix.toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${pr.toFixed(1)}%</td></tr>`
             }).join('');
         }
 
@@ -202,29 +222,48 @@
                     { label: 'Market Gap', data: [], backgroundColor: 'rgba(59, 130, 246, 0.7)', borderRadius: 4, barPercentage: 0.5 },
                     { label: 'Target Gap', data: [], backgroundColor: 'rgba(253, 224, 71, 0.7)', borderRadius: 4, barPercentage: 0.5 }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => (Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw).toFixed(1) + "%" }}, datalabels: { display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4, formatter: (v) => (Array.isArray(v) ? v[1] : v).toFixed(1) + '%', font: { size: 10, weight: 'bold' }}}, scales: { x: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, color: '#64748B' }}, y: { grid: { color: '#334155' }, ticks: { callback: v => v.toFixed(0) + '%', color: '#94A3B8', font: { size: 8 } }}}}
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => {
+                            let v = (Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw) || 0;
+                            return ctx.dataset.label + ": " + (v >= 0 ? '+' : '') + v.toFixed(1) + "%";
+                        }}},
+                        datalabels: {
+                            display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4,
+                            formatter: (v) => {
+                                // 核心修復：強制格式化，絕不顯示 undefined
+                                let val = (Array.isArray(v) ? v[1] : v) || 0;
+                                if (isNaN(val)) val = 0;
+                                return (val >= 0 ? '+' : '') + val.toFixed(1) + '%';
+                            },
+                            font: { size: 10, weight: 'bold' }
+                        }
+                    },
+                    scales: { 
+                        x: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, color: '#64748B' }},
+                        y: { grid: { color: '#334155' }, ticks: { callback: v => v.toFixed(0) + '%', color: '#94A3B8', font: { size: 8 } } }
+                    }
+                }
             });
             chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), gapOpt());
             chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), gapOpt());
             
             chartInstances.macro = new Chart(document.getElementById('chart-macro'), {
                 type: 'line', data: { labels: [], datasets: [
-                    { label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2, pointHoverRadius: 5 },
-                    { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 5 }
+                    { label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 },
+                    { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 }
                 ]},
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    interaction: { mode: 'index', intersect: false }, // 強化：懸停時顯示兩者
+                    interaction: { mode: 'index', intersect: false },
                     plugins: { 
                         legend: { display: false }, 
                         datalabels: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { size: 10 },
-                            bodyFont: { family: 'JetBrains Mono', size: 11 },
-                            callbacks: {
-                                label: (ctx) => ctx.dataset.label + ": " + Number(ctx.raw).toFixed(ctx.dataset.label === 'FX' ? 2 : 1)
-                            }
+                            callbacks: { label: (ctx) => ctx.dataset.label + ": " + Number(ctx.raw).toFixed(ctx.dataset.label === 'FX' ? 2 : 1) }
                         }
                     }, 
                     scales: { 
@@ -246,17 +285,19 @@
             chartInstances.c3711.data.datasets[0].data = history.map(h => [0, ((h.adr/5*h.fx*(h.p3711/h.p2330))/h.p3711 - 1)*100]);
             chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (t37 / h.p3711 - 1) * 100]);
             chartInstances.c3711.update();
+            
             chartInstances.c2330.data.labels = lbl;
             chartInstances.c2330.data.datasets[0].data = history.map(h => [0, ((h.adr/5*h.fx)/h.p2330 - 1)*100]);
             chartInstances.c2330.data.datasets[1].data = history.map(h => [0, (t23 / h.p2330 - 1) * 100]);
             chartInstances.c2330.update();
+            
             chartInstances.macro.data.labels = lbl;
             chartInstances.macro.data.datasets[0].data = history.map(h => h.fx);
             chartInstances.macro.data.datasets[1].data = history.map(h => h.vix);
             chartInstances.macro.update();
         }
 
-        function clearHistory() { if(confirm("RESET ALL DATA?")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if(confirm("RESET SYSTEM? 此動作將清除所有快取數據。")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
