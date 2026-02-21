@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v7.2</title>
+    <title>HUNTER TERMINAL v7.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -20,14 +20,14 @@
         .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; color: #FFF; font-weight: 700; cursor: pointer; }
         input { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; text-align: center; }
         .chart-container { position: relative; height: 320px; width: 100%; margin-top: 10px; }
-        .chart-macro { height: 140px; }
+        .chart-macro { height: 150px; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
     <div class="max-w-[1400px] mx-auto">
         <header class="header-wrapper">
             <div class="flex flex-col sm:flex-row items-center gap-4">
-                <span class="title-text uppercase tracking-tighter">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.2</span></span>
+                <span class="title-text uppercase tracking-tighter">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.3</span></span>
                 <nav class="flex bg-slate-900/50 p-1 rounded-lg">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">RADAR</button>
@@ -35,7 +35,7 @@
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                 <div class="text-[9px] mono text-slate-500 text-right leading-tight uppercase">
-                    <span id="load-status">MACRO_SHIELD: ON</span><br><span id="last-sync-date">UPDATE: --</span>
+                    <span id="load-status">INTERACTIVE: ON</span><br><span id="last-sync-date">UPDATE: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL</button>
@@ -62,7 +62,7 @@
             <div class="md:col-span-5">
                 <section class="bg-card border border-slate-700 p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
                     <div class="text-center">
-                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Target Matrix</h2>
+                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Target Positioning</h2>
                         <div class="grid grid-cols-2 gap-8">
                             <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none focus:ring-0"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 uppercase font-bold">Gap: --</p></div>
                             <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 uppercase font-bold">Gap: --</p></div>
@@ -70,7 +70,7 @@
                     </div>
                     <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-700 flex items-center justify-between mt-6">
                         <div class="flex items-center gap-3"><span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span><span id="action-text" class="text-xl font-bold uppercase italic tracking-tighter">Ready</span></div>
-                        <div class="text-right">
+                        <div class="text-right leading-tight">
                             <p class="text-[10px] text-blue-400 font-bold mono">FX: <span id="fx-display">--</span></p>
                             <p class="text-[10px] text-rose-400 font-bold mono">VIX: <span id="vix-display">--</span></p>
                         </div>
@@ -85,8 +85,8 @@
 
         <main id="view-radar" class="hidden space-y-5 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
-                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
             </div>
             <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
                 <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX (USD/TWD) & VIX Index</h2>
@@ -95,7 +95,7 @@
         </main>
 
         <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden shadow-2xl">
-            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>History Log Stream</span><button onclick="clearHistory()" class="text-rose-400 font-bold hover:text-rose-200">Reset System</button></div>
+            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Historical Stream</span><button onclick="clearHistory()" class="text-rose-400 font-bold hover:text-rose-200">Reset System</button></div>
             <div class="max-h-28 overflow-y-auto"><table class="w-full text-left text-[11px] mono border-collapse"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-3">Date</th><th class="p-3">ADR</th><th class="p-3">2330</th><th class="p-3">FX</th><th class="p-3">VIX</th><th class="p-3">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
         </footer>
     </div>
@@ -103,18 +103,17 @@
     <script>
         Chart.register(ChartDataLabels);
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('HT_V72_HISTORY') || '[]');
+        let history = JSON.parse(localStorage.getItem('HT_V73_HISTORY') || '[]');
         let chartInstances = {};
 
         window.onload = () => {
             initCharts();
-            // Restore persistent targets
-            document.getElementById('input-capital').value = localStorage.getItem('HT_V72_CAP') || '570000';
-            document.getElementById('input-roi').value = localStorage.getItem('HT_V72_ROI') || '15';
-            document.getElementById('target-3711').value = localStorage.getItem('HT_V72_T3711') || '330';
-            document.getElementById('target-2330').value = localStorage.getItem('HT_V72_T2330') || '1850';
+            document.getElementById('input-capital').value = localStorage.getItem('HT_V73_CAP') || '570000';
+            document.getElementById('input-roi').value = localStorage.getItem('HT_V73_ROI') || '15';
+            document.getElementById('target-3711').value = localStorage.getItem('HT_V73_T3711') || '330';
+            document.getElementById('target-2330').value = localStorage.getItem('HT_V73_T2330') || '1850';
 
-            const last = localStorage.getItem('HT_V72_SNAP');
+            const last = localStorage.getItem('HT_V73_SNAP');
             if(last) {
                 marketData = JSON.parse(last);
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
@@ -136,10 +135,10 @@
             const t3711 = parseFloat(document.getElementById('target-3711').value) || 330;
             const t2330 = parseFloat(document.getElementById('target-2330').value) || 1850;
 
-            localStorage.setItem('HT_V72_CAP', cap);
-            localStorage.setItem('HT_V72_ROI', roi);
-            localStorage.setItem('HT_V72_T3711', t3711);
-            localStorage.setItem('HT_V72_T2330', t2330);
+            localStorage.setItem('HT_V73_CAP', cap);
+            localStorage.setItem('HT_V73_ROI', roi);
+            localStorage.setItem('HT_V73_T3711', t3711);
+            localStorage.setItem('HT_V73_T2330', t2330);
 
             const s2330 = Math.floor((cap - (t3711 * 1000)) / t2330);
             const d3711 = ((marketData.stock_3711_current / t3711) - 1) * 100;
@@ -159,7 +158,7 @@
             document.getElementById('vix-display').innerText = marketData.vix ? marketData.vix.toFixed(1) : '--';
             
             const dot = document.getElementById('status-dot');
-            if (marketData.stock_3711_current <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: BUY"; }
+            if (marketData.stock_3711_current <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: EXECUTE"; }
             else { dot.style.backgroundColor = '#64748B'; document.getElementById('action-text').innerText = "LURKING"; }
         }
 
@@ -170,20 +169,13 @@
                 const items = Array.isArray(data) ? data : [data];
                 items.forEach(i => {
                     if (!history.find(h => h.date === i.date)) {
-                        history.push({ 
-                            date: i.date, adr: i.tsm_adr, 
-                            p2330: i.stock_2330_current || 1915, 
-                            p3711: i.stock_3711_current || 354.5,
-                            fx: i.usd_twd || 31.54,
-                            vix: i.vix || 19.0
-                        });
+                        history.push({ date: i.date, adr: i.tsm_adr, p2330: i.stock_2330_current || 1915, p3711: i.stock_3711_current || 354.5, fx: i.usd_twd || 31.54, vix: i.vix || 19.0 });
                     }
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                marketData.usd_twd = marketData.usd_twd || 31.54;
-                localStorage.setItem('HT_V72_SNAP', JSON.stringify(marketData));
-                localStorage.setItem('HT_V72_HISTORY', JSON.stringify(history));
+                localStorage.setItem('HT_V73_SNAP', JSON.stringify(marketData));
+                localStorage.setItem('HT_V73_HISTORY', JSON.stringify(history));
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             };
             r.readAsText(e.target.files[0]);
@@ -200,7 +192,7 @@
         function renderHistory() {
             document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
                 const pr = ((h.adr / 5 * h.fx / h.p2330) - 1) * 100;
-                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${h.adr.toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${h.fx.toFixed(2)}</td><td class="p-3 text-rose-400">${h.vix.toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${pr.toFixed(1)}%</td></tr>`
+                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white font-bold">$${h.adr.toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${h.fx.toFixed(2)}</td><td class="p-3 text-rose-400">${h.vix.toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${pr.toFixed(1)}%</td></tr>`
             }).join('');
         }
 
@@ -215,17 +207,32 @@
             chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), gapOpt());
             chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), gapOpt());
             
-            // Macro Shield Chart (Combo: Line + Area)
             chartInstances.macro = new Chart(document.getElementById('chart-macro'), {
                 type: 'line', data: { labels: [], datasets: [
-                    { label: 'USD/TWD', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2 },
-                    { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 0 }
+                    { label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2, pointHoverRadius: 5 },
+                    { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 5 }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false }}, scales: { 
-                    x: { display: false }, 
-                    yFX: { type: 'linear', position: 'left', grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}},
-                    yVIX: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#FB7185', font: { size: 8 }}}
-                }}
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, // 強化：懸停時顯示兩者
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 10 },
+                            bodyFont: { family: 'JetBrains Mono', size: 11 },
+                            callbacks: {
+                                label: (ctx) => ctx.dataset.label + ": " + Number(ctx.raw).toFixed(ctx.dataset.label === 'FX' ? 2 : 1)
+                            }
+                        }
+                    }, 
+                    scales: { 
+                        x: { display: false }, 
+                        yFX: { type: 'linear', position: 'left', grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}},
+                        yVIX: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#FB7185', font: { size: 8 }}}
+                    }
+                }
             });
         }
 
@@ -239,12 +246,10 @@
             chartInstances.c3711.data.datasets[0].data = history.map(h => [0, ((h.adr/5*h.fx*(h.p3711/h.p2330))/h.p3711 - 1)*100]);
             chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (t37 / h.p3711 - 1) * 100]);
             chartInstances.c3711.update();
-            
             chartInstances.c2330.data.labels = lbl;
             chartInstances.c2330.data.datasets[0].data = history.map(h => [0, ((h.adr/5*h.fx)/h.p2330 - 1)*100]);
             chartInstances.c2330.data.datasets[1].data = history.map(h => [0, (t23 / h.p2330 - 1) * 100]);
             chartInstances.c2330.update();
-            
             chartInstances.macro.data.labels = lbl;
             chartInstances.macro.data.datasets[0].data = history.map(h => h.fx);
             chartInstances.macro.data.datasets[1].data = history.map(h => h.vix);
