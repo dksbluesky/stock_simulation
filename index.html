@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v7.7</title>
+    <title>HUNTER TERMINAL v7.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -26,7 +26,7 @@
     <div class="max-w-[1400px] mx-auto">
         <header class="header-box">
             <div class="flex flex-col sm:flex-row items-center gap-4">
-                <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.7</span></span>
+                <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.6</span></span>
                 <nav class="flex bg-slate-900/50 p-1 rounded-lg">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
                     <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">RADAR</button>
@@ -34,7 +34,7 @@
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                 <div class="text-[9px] mono text-slate-500 text-right leading-tight uppercase">
-                    <span id="load-status">TARGET_348: ACTIVE</span><br><span id="last-sync-date">UPDATE: --</span>
+                    <span id="load-status">DEFENSE_MODE: ON</span><br><span id="last-sync-date">UPDATE: --</span>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL</button>
@@ -63,8 +63,8 @@
                     <div class="text-center">
                         <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-slate-400">Tactical Positioning</h2>
                         <div class="grid grid-cols-2 gap-8">
-                            <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" value="348.0" class="w-full text-4xl font-black text-center border-none"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
-                            <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" value="1850" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
+                            <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
+                            <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-700 flex items-center justify-between mt-6">
@@ -81,8 +81,8 @@
 
         <main id="view-radar" class="hidden space-y-5 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
-                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
             </div>
             <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
                 <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX & VIX Index</h2>
@@ -99,24 +99,28 @@
     <script>
         Chart.register(ChartDataLabels);
         let marketData = null;
-        let history = JSON.parse(localStorage.getItem('HT_V77_HISTORY') || '[]');
+        let history = JSON.parse(localStorage.getItem('HT_V76_HISTORY') || '[]');
         let chartInstances = {};
 
+        // 防禦性格式化
         const safeNum = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
         const safePct = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
 
         window.onload = () => {
             initCharts();
-            // 如果沒記憶過，預設 348.0
-            const getVal = (k, d) => localStorage.getItem('HT_V77_' + k) || d;
+            const getVal = (k, d) => localStorage.getItem('HT_V76_' + k) || localStorage.getItem('HT_V75_' + k) || d;
             document.getElementById('input-capital').value = getVal('CAP', '570000');
             document.getElementById('input-roi').value = getVal('ROI', '15');
-            document.getElementById('target-3711').value = getVal('T3711', '348.0');
+            document.getElementById('target-3711').value = getVal('T3711', '330');
             document.getElementById('target-2330').value = getVal('T2330', '1850');
 
-            const last = localStorage.getItem('HT_V77_SNAP') || localStorage.getItem('HT_V76_SNAP');
+            const last = localStorage.getItem('HT_V76_SNAP') || localStorage.getItem('HT_V75_SNAP');
             if(last) {
                 marketData = JSON.parse(last);
+                marketData.adr_change = safeNum(marketData.adr_change);
+                marketData.usd_twd = safeNum(marketData.usd_twd, 31.54);
+                marketData.vix = safeNum(marketData.vix, 19.0);
+                history = history.map(h => ({ ...h, fx: safeNum(h.fx, 31.54), vix: safeNum(h.vix, 19.0) }));
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             }
         };
@@ -133,30 +137,32 @@
             if(!marketData) return;
             const cap = safeNum(document.getElementById('input-capital').value, 570000);
             const roi = safeNum(document.getElementById('input-roi').value, 15);
-            const t3711 = safeNum(document.getElementById('target-3711').value, 348);
+            const t3711 = safeNum(document.getElementById('target-3711').value, 330);
             const t2330 = safeNum(document.getElementById('target-2330').value, 1850);
 
-            localStorage.setItem('HT_V77_CAP', cap);
-            localStorage.setItem('HT_V77_ROI', roi);
-            localStorage.setItem('HT_V77_T3711', t3711);
-            localStorage.setItem('HT_V77_T2330', t2330);
+            localStorage.setItem('HT_V76_CAP', cap);
+            localStorage.setItem('HT_V76_ROI', roi);
+            localStorage.setItem('HT_V76_T3711', t3711);
+            localStorage.setItem('HT_V76_T2330', t2330);
 
-            const m3711 = safeNum(marketData.stock_3711_current, 358);
-            const d3711 = (t3711 / m3711 - 1) * 100; // 使用 DK 的獵人公式：(目標 / 現價) - 1
-            const d2330 = (t2330 / safeNum(marketData.stock_2330_current, 1930) - 1) * 100;
+            const s2330 = Math.floor((cap - (t3711 * 1000)) / t2330);
+            const d3711 = ((safeNum(marketData.stock_3711_current, 354.5) / t3711) - 1) * 100;
+            const d2330 = ((safeNum(marketData.stock_2330_current, 1915) / t2330) - 1) * 100;
 
             document.getElementById('res-pe').innerText = (t3711 / 14.53).toFixed(1) + "X";
+            document.getElementById('res-2330-share').innerText = (s2330 > 0 ? s2330 : 0) + " 股";
+            document.getElementById('res-used').innerText = (t3711*1000 + (s2330 > 0 ? s2330*t2330 : 0)).toLocaleString();
             document.getElementById('dist-3711').innerText = 'Gap: ' + safePct(d3711);
             document.getElementById('dist-2330').innerText = 'Gap: ' + safePct(d2330);
-            
-            const fx = safeNum(marketData.usd_twd, 31.48);
-            const p = ((safeNum(marketData.tsm_adr) / 5 * fx / safeNum(marketData.stock_2330_current, 1930)) - 1) * 100;
+            document.getElementById('roi-val-display').innerText = roi + "%";
+
+            const p = ((safeNum(marketData.tsm_adr) / 5 * safeNum(marketData.usd_twd, 31.54) / safeNum(marketData.stock_2330_current, 1915)) - 1) * 100;
             document.getElementById('premium-val').innerText = safeNum(p).toFixed(1) + "%";
-            document.getElementById('fx-display').innerText = fx.toFixed(2);
+            document.getElementById('fx-display').innerText = safeNum(marketData.usd_twd, 31.54).toFixed(2);
             document.getElementById('vix-display').innerText = safeNum(marketData.vix, 19.0).toFixed(1);
             
             const dot = document.getElementById('status-dot');
-            if (m3711 <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: BUY"; }
+            if (safeNum(marketData.stock_3711_current) <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: BUY"; }
             else { dot.style.backgroundColor = '#64748B'; document.getElementById('action-text').innerText = "LURKING"; }
         }
 
@@ -167,13 +173,15 @@
                 const items = Array.isArray(data) ? data : [data];
                 items.forEach(i => {
                     if (!history.find(h => h.date === i.date)) {
-                        history.push({ date: i.date, adr: safeNum(i.tsm_adr), p2330: safeNum(i.stock_2330_current), p3711: safeNum(i.stock_3711_current), fx: safeNum(i.usd_twd), vix: safeNum(i.vix) });
+                        history.push({ 
+                            date: i.date, adr: safeNum(i.tsm_adr), p2330: safeNum(i.stock_2330_current, 1915), p3711: safeNum(i.stock_3711_current, 354.5), fx: safeNum(i.usd_twd, 31.54), vix: safeNum(i.vix, 19.0)
+                        });
                     }
                 });
                 history.sort((a,b) => new Date(a.date) - new Date(b.date));
                 marketData = items[items.length - 1];
-                localStorage.setItem('HT_V77_SNAP', JSON.stringify(marketData));
-                localStorage.setItem('HT_V77_HISTORY', JSON.stringify(history));
+                localStorage.setItem('HT_V76_SNAP', JSON.stringify(marketData));
+                localStorage.setItem('HT_V76_HISTORY', JSON.stringify(history));
                 updateMarketUI(); renderHistory(); calculate(); updateCharts();
             };
             r.readAsText(e.target.files[0]);
@@ -182,50 +190,59 @@
         function updateMarketUI() {
             document.getElementById('adr-price').innerText = "$" + safeNum(marketData.tsm_adr).toFixed(2);
             document.getElementById('adr-change').innerText = safePct(safeNum(marketData.adr_change));
-            document.getElementById('stock-2330-market').innerText = safeNum(marketData.stock_2330_current);
-            document.getElementById('stock-3711-market').innerText = safeNum(marketData.stock_3711_current);
+            document.getElementById('stock-2330-market').innerText = safeNum(marketData.stock_2330_current, 1915);
+            document.getElementById('stock-3711-market').innerText = safeNum(marketData.stock_3711_current, 354.5);
             document.getElementById('last-sync-date').innerText = marketData.date;
         }
 
         function renderHistory() {
             document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
-                const pr = ((h.adr / 5 * h.fx / h.p2330) - 1) * 100;
-                return `<tr class="hover:bg-slate-800 text-[10px] font-bold"><td class="p-3 text-slate-500">${h.date}</td><td class="p-3 text-white">$${h.adr.toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${h.fx.toFixed(2)}</td><td class="p-3 text-rose-400">${h.vix.toFixed(1)}</td><td class="p-3 text-yellow-400">${pr.toFixed(1)}%</td></tr>`
+                const pr = ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54) / safeNum(h.p2330, 1915)) - 1) * 100;
+                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${safeNum(h.fx).toFixed(2)}</td><td class="p-3 text-rose-400">${safeNum(h.vix).toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${safeNum(pr).toFixed(1)}%</td></tr>`
             }).join('');
         }
 
         function initCharts() {
-            const o = () => ({
+            const gapOpt = () => ({
                 type: 'bar', data: { labels: [], datasets: [{ label: 'Market', data: [], backgroundColor: 'rgba(59, 130, 246, 0.7)', borderRadius: 4, barPercentage: 0.5 }, { label: 'Target', data: [], backgroundColor: 'rgba(253, 224, 71, 0.7)', borderRadius: 4, barPercentage: 0.5 }]},
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, datalabels: { display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4, formatter: (v) => safePct(Array.isArray(v) ? v[1] : v), font: { size: 10, weight: 'bold' }}},
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { callbacks: { label: (ctx) => "Gap: " + safePct(Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw) }}, 
+                        datalabels: { display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4, formatter: (v) => safePct(Array.isArray(v) ? v[1] : v), font: { size: 10, weight: 'bold' }}
+                    }, 
                     scales: { x: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, color: '#64748B' }}, y: { grid: { color: '#334155' }, ticks: { callback: v => v + '%', color: '#94A3B8', font: { size: 8 } }}}
                 }
             });
-            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), o());
-            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), o());
+            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), gapOpt());
+            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), gapOpt());
             chartInstances.macro = new Chart(document.getElementById('chart-macro'), {
-                type: 'line', data: { labels: [], datasets: [{ label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2 }, { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2 }]},
-                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, datalabels: { display: false }}, scales: { x: { display: false }, yFX: { type: 'linear', position: 'left', grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}}, yVIX: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#FB7185', font: { size: 8 }}}}}
+                type: 'line', data: { labels: [], datasets: [{ label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 }, { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 }]},
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', callbacks: { label: (c) => c.dataset.label + ": " + Number(c.raw || 0).toFixed(c.dataset.label==='FX'?2:1) }}}, scales: { x: { display: false }, yFX: { type: 'linear', position: 'left', grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}}, yVIX: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#FB7185', font: { size: 8 }}}}}
             });
         }
 
         function updateCharts() {
             if (history.length === 0) return;
             const lbl = history.map(h => h.date);
-            const t37 = safeNum(document.getElementById('target-3711').value, 348);
+            const t37 = safeNum(document.getElementById('target-3711').value, 330);
+            const t23 = safeNum(document.getElementById('target-2330').value, 1850);
             chartInstances.c3711.data.labels = lbl;
-            chartInstances.c3711.data.datasets[0].data = history.map(h => [0, ((h.adr/5*h.fx*(h.p3711/h.p2330))/h.p3711 - 1)*100]);
-            chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (t37 / h.p3711 - 1) * 100]);
+            chartInstances.c3711.data.datasets[0].data = history.map(h => [0, ((safeNum(h.adr)/5*safeNum(h.fx, 31.54)*(h.p3711/h.p2330))/h.p3711 - 1)*100]);
+            chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (t37 / safeNum(h.p3711, 354.5) - 1) * 100]);
             chartInstances.c3711.update();
+            chartInstances.c2330.data.labels = lbl;
+            chartInstances.c2330.data.datasets[0].data = history.map(h => [0, ((safeNum(h.adr)/5*safeNum(h.fx, 31.54))/safeNum(h.p2330, 1915) - 1)*100]);
+            chartInstances.c2330.data.datasets[1].data = history.map(h => [0, (t23 / safeNum(h.p2330, 1915) - 1) * 100]);
+            chartInstances.c2330.update();
             chartInstances.macro.data.labels = lbl;
-            chartInstances.macro.data.datasets[0].data = history.map(h => h.fx);
-            chartInstances.macro.data.datasets[1].data = history.map(h => h.vix);
+            chartInstances.macro.data.datasets[0].data = history.map(h => safeNum(h.fx, 31.54));
+            chartInstances.macro.data.datasets[1].data = history.map(h => safeNum(h.vix, 19.0));
             chartInstances.macro.update();
         }
 
-        function clearHistory() { if(confirm("RESET SYSTEM?")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if(confirm("確定重置系統？")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
