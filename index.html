@@ -12,14 +12,12 @@
         :root { --bg: #0F172A; --card: #1E293B; --border: #334155; --blue: #3B82F6; --yellow: #FDE047; --rose: #FB7185; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #FFF; font-size: 13px; margin: 0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        /* 標題不被切掉的強韌佈局 */
         .header-box { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); }
-        .title-group { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; overflow: hidden; }
-        .title-text { font-size: clamp(0.9rem, 4vw, 1.4rem); font-weight: 900; font-style: italic; white-space: nowrap; color: #FFF; flex-shrink: 1; }
-        @media (min-width: 768px) { .header-box { flex-direction: row; justify-content: space-between; } }
-        .tab-btn { padding: 8px 12px; font-weight: 800; font-size: 11px; color: #64748B; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+        .title-text { font-size: clamp(0.9rem, 4.5vw, 1.4rem); font-weight: 900; font-style: italic; white-space: nowrap; color: #FFF; }
+        @media (min-width: 768px) { .header-box { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .tab-btn { padding: 8px 12px; font-weight: 800; font-size: 11px; color: #64748B; border-bottom: 2px solid transparent; cursor: pointer; }
         .tab-btn.active { color: var(--yellow); border-bottom-color: var(--yellow); background: rgba(253, 224, 71, 0.05); }
-        .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; color: #FFF; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; color: #FFF; font-weight: 700; cursor: pointer; }
         input { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; text-align: center; width: 100%; }
         .chart-container { position: relative; height: 320px; width: 100%; margin-top: 10px; }
     </style>
@@ -27,7 +25,7 @@
 <body class="p-2 sm:p-4">
     <div class="max-w-[1400px] mx-auto">
         <header class="header-box">
-            <div class="title-group">
+            <div class="flex flex-col sm:flex-row items-center gap-4">
                 <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.6</span></span>
                 <nav class="flex bg-slate-900/50 p-1 rounded-lg">
                     <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
@@ -46,12 +44,12 @@
         <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5 mt-4">
             <div class="md:col-span-3 space-y-4">
                 <section class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
-                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic">Market Status</h2>
+                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic text-slate-400">Context</h2>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center"><span class="text-xs">TSM ADR</span><div class="text-right font-bold"><p id="adr-price" class="mono text-lg text-white">--</p><p id="adr-change" class="text-[10px]">--</p></div></div>
-                        <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono">--</span></div>
-                        <div class="flex justify-between text-xs text-slate-400"><span>3711 Close</span><span id="stock-3711-market" class="mono">--</span></div>
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 text-yellow-400 font-bold"><span class="text-[9px]">PREMIUM %</span><span id="premium-val" class="mono text-xl">--</span></div>
+                        <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono text-white">--</span></div>
+                        <div class="flex justify-between text-xs text-slate-400"><span>3711 Close</span><span id="stock-3711-market" class="mono text-white">--</span></div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 text-yellow-400 font-bold"><span class="text-[9px]">PREM %</span><span id="premium-val" class="mono text-xl">--</span></div>
                     </div>
                 </section>
                 <section class="bg-card border border-slate-700 p-4 rounded-lg text-xs font-bold uppercase text-slate-400">
@@ -63,7 +61,7 @@
             <div class="md:col-span-5">
                 <section class="bg-card border border-slate-700 p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
                     <div class="text-center">
-                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic">Tactical Lock</h2>
+                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-slate-400">Tactical Positioning</h2>
                         <div class="grid grid-cols-2 gap-8">
                             <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
                             <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
@@ -77,14 +75,14 @@
             </div>
 
             <div class="md:col-span-4">
-                <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold uppercase"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center">Outcome</h2><div class="space-y-6 text-xs"><div class="flex justify-between items-center"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
+                <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold uppercase"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center text-slate-400">Outcome</h2><div class="space-y-6 text-xs"><div class="flex justify-between items-center"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
             </div>
         </main>
 
         <main id="view-radar" class="hidden space-y-5 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
-                <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
+                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
             </div>
             <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
                 <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX & VIX Index</h2>
@@ -92,8 +90,8 @@
             </div>
         </main>
 
-        <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden shadow-2xl">
-            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Intelligence Feed</span><button onclick="clearHistory()" class="text-rose-400 font-bold hover:text-rose-200">Reset System</button></div>
+        <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden">
+            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Intelligence Feed</span><button onclick="clearHistory()" class="text-rose-400 font-bold">Reset System</button></div>
             <div class="max-h-28 overflow-y-auto"><table class="w-full text-left text-[11px] mono border-collapse"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-3">Date</th><th class="p-3">ADR</th><th class="p-3">2330</th><th class="p-3">FX</th><th class="p-3">VIX</th><th class="p-3">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
         </footer>
     </div>
@@ -104,17 +102,13 @@
         let history = JSON.parse(localStorage.getItem('HT_V76_HISTORY') || '[]');
         let chartInstances = {};
 
-        // 核心防護函數：絕不回傳 undefined
-        const safeNum = (v, d = 0) => {
-            const n = parseFloat(v);
-            return isNaN(n) ? d : n;
-        };
-        const safePct = (v) => (v >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
+        // 防禦性格式化
+        const safeNum = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
+        const safePct = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
 
         window.onload = () => {
             initCharts();
-            // 強制從所有可能的舊金鑰恢復記憶
-            const getVal = (k, d) => localStorage.getItem('HT_V76_' + k) || localStorage.getItem('HT_V75_' + k) || localStorage.getItem('HT_V72_' + k) || d;
+            const getVal = (k, d) => localStorage.getItem('HT_V76_' + k) || localStorage.getItem('HT_V75_' + k) || d;
             document.getElementById('input-capital').value = getVal('CAP', '570000');
             document.getElementById('input-roi').value = getVal('ROI', '15');
             document.getElementById('target-3711').value = getVal('T3711', '330');
@@ -123,7 +117,6 @@
             const last = localStorage.getItem('HT_V76_SNAP') || localStorage.getItem('HT_V75_SNAP');
             if(last) {
                 marketData = JSON.parse(last);
-                // 自動修補邏輯
                 marketData.adr_change = safeNum(marketData.adr_change);
                 marketData.usd_twd = safeNum(marketData.usd_twd, 31.54);
                 marketData.vix = safeNum(marketData.vix, 19.0);
@@ -181,12 +174,7 @@
                 items.forEach(i => {
                     if (!history.find(h => h.date === i.date)) {
                         history.push({ 
-                            date: i.date, adr: safeNum(i.tsm_adr), 
-                            p2330: safeNum(i.stock_2330_current, 1915), 
-                            p3711: safeNum(i.stock_3711_current, 354.5), 
-                            fx: safeNum(i.usd_twd, 31.54), 
-                            vix: safeNum(i.vix, 19.0),
-                            chg: safeNum(i.adr_change)
+                            date: i.date, adr: safeNum(i.tsm_adr), p2330: safeNum(i.stock_2330_current, 1915), p3711: safeNum(i.stock_3711_current, 354.5), fx: safeNum(i.usd_twd, 31.54), vix: safeNum(i.vix, 19.0)
                         });
                     }
                 });
@@ -210,7 +198,7 @@
         function renderHistory() {
             document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
                 const pr = ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54) / safeNum(h.p2330, 1915)) - 1) * 100;
-                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${safeNum(h.fx, 31.54).toFixed(2)}</td><td class="p-3 text-rose-400">${safeNum(h.vix, 19.0).toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${safeNum(pr).toFixed(1)}%</td></tr>`
+                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${safeNum(h.fx).toFixed(2)}</td><td class="p-3 text-rose-400">${safeNum(h.vix).toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${safeNum(pr).toFixed(1)}%</td></tr>`
             }).join('');
         }
 
