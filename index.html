@@ -226,8 +226,9 @@ let chartInstances = {};
 let refreshTimer   = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const safeNum = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
-const safePct = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
+const safeNum  = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
+const safePct  = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
+const fmtPrice = (v) => { const n = parseFloat(v); return isNaN(n) ? '--' : parseFloat(n.toFixed(2)); };
 const histKey  = () => `HT_V80_HIST_${currentTicker}`;
 const snapKey  = () => `HT_V80_SNAP_${currentTicker}`;
 
@@ -560,8 +561,8 @@ function updateMarketUI() {
     document.getElementById('adr-price').innerText              = '$' + safeNum(marketData.tsm_adr).toFixed(2);
     document.getElementById('adr-change').innerText             = safePct(pct);
     document.getElementById('adr-change').style.color           = pct >= 0 ? '#22c55e' : '#FB7185';
-    document.getElementById('stock-2330-market').innerText      = safeNum(marketData.stock_2330_current, 1915);
-    document.getElementById('stock-secondary-market').innerText = safeNum(marketData.stock_secondary_current || marketData.stock_3711_current);
+    document.getElementById('stock-2330-market').innerText      = fmtPrice(marketData.stock_2330_current);
+    document.getElementById('stock-secondary-market').innerText = fmtPrice(marketData.stock_secondary_current || marketData.stock_3711_current);
     document.getElementById('last-sync-time').innerText         = marketData.date;
 }
 
@@ -571,8 +572,8 @@ function renderHistory() {
         return `<tr class="hover:bg-slate-800 text-[10px]">
             <td class="p-3 text-slate-500 font-bold">${h.date}</td>
             <td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td>
-            <td class="p-3">${safeNum(h.p2330)}</td>
-            <td class="p-3">${safeNum(h.pSec || h.p3711) || '--'}</td>
+            <td class="p-3">${fmtPrice(h.p2330)}</td>
+            <td class="p-3">${fmtPrice(h.pSec || h.p3711)}</td>
             <td class="p-3 text-blue-400">${safeNum(h.fx).toFixed(2)}</td>
             <td class="p-3 text-rose-400">${safeNum(h.vix).toFixed(1)}</td>
             <td class="p-3 text-yellow-400 font-bold">${safeNum(prem).toFixed(1)}%</td>
