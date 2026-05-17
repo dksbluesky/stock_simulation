@@ -57,8 +57,8 @@
                     <option value="2379">2379 Realtek</option>
                     <option value="custom">Custom...</option>
                 </select>
-                <input type="text" id="custom-ticker" placeholder="e.g. 2330" maxlength="6"
-                       style="width:70px;display:none" oninput="onCustomTickerInput()" class="text-[10px]">
+                <input type="text" id="custom-ticker" placeholder="e.g. 006208" maxlength="6"
+                       style="width:76px;display:none" oninput="onCustomTickerInput()" class="text-[10px]">
                 <div class="flex items-center gap-1">
                     <label class="text-[9px] text-slate-500 uppercase">EPS</label>
                     <input type="number" id="input-eps" step="0.1" min="0.1" style="width:65px" onchange="calculate()" class="text-[10px]">
@@ -72,8 +72,6 @@
                     <span id="last-sync-time">SYNC: --</span>
                 </div>
                 <button id="sync-btn" onclick="fetchAllData()" class="btn-sync">AUTO_SYNC</button>
-                <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('file-input').click()" class="btn-action" title="Load JSON fallback">JSON</button>
             </div>
         </div>
     </header>
@@ -282,9 +280,13 @@ function onTickerChange() {
     applyTicker(val);
 }
 
+let _customTickerTimer = null;
 function onCustomTickerInput() {
+    clearTimeout(_customTickerTimer);
     const val = document.getElementById('custom-ticker').value.trim().toUpperCase();
-    if (val.length >= 4) applyTicker(val);
+    if (val.length >= 4) {
+        _customTickerTimer = setTimeout(() => applyTicker(val), 700);
+    }
 }
 
 function applyTicker(ticker) {
@@ -550,34 +552,6 @@ function toggleAutoRefresh() {
     }
 }
 
-// ── JSON file fallback ────────────────────────────────────────────────────────
-function handleFileUpload(e) {
-    const r = new FileReader();
-    r.onload = (ev) => {
-        const raw   = JSON.parse(ev.target.result);
-        const items = Array.isArray(raw) ? raw : [raw];
-        items.forEach(i => {
-            if (!history.find(h => h.date === i.date)) {
-                history.push({
-                    date:  i.date,
-                    adr:   safeNum(i.tsm_adr),
-                    p2330: safeNum(i.stock_2330_current, 1915),
-                    pSec:  safeNum(i.stock_secondary_current || i.stock_3711_current, 330),
-                    fx:    safeNum(i.usd_twd, 31.54),
-                    vix:   safeNum(i.vix, 19.0),
-                });
-            }
-        });
-        history.sort((a, b) => new Date(a.date) - new Date(b.date));
-        marketData = items[items.length - 1];
-        marketData.stock_secondary_current = marketData.stock_secondary_current
-                                          || marketData.stock_3711_current;
-        localStorage.setItem(snapKey(), JSON.stringify(marketData));
-        localStorage.setItem(histKey(), JSON.stringify(history));
-        updateMarketUI(); renderHistory(); calculate(); updateCharts();
-    };
-    r.readAsText(e.target.files[0]);
-}
 
 // ── UI update ─────────────────────────────────────────────────────────────────
 function updateMarketUI() {
