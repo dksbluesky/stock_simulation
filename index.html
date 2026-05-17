@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUNTER TERMINAL v7.6</title>
+    <title>HUNTER TERMINAL v8.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -11,6 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
         :root { --bg: #0F172A; --card: #1E293B; --border: #334155; --blue: #3B82F6; --yellow: #FDE047; --rose: #FB7185; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #FFF; font-size: 13px; margin: 0; }
+        .bg-card { background-color: var(--card); }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .header-box { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); }
         .title-text { font-size: clamp(0.9rem, 4.5vw, 1.4rem); font-weight: 900; font-style: italic; white-space: nowrap; color: #FFF; }
@@ -18,231 +19,608 @@
         .tab-btn { padding: 8px 12px; font-weight: 800; font-size: 11px; color: #64748B; border-bottom: 2px solid transparent; cursor: pointer; }
         .tab-btn.active { color: var(--yellow); border-bottom-color: var(--yellow); background: rgba(253, 224, 71, 0.05); }
         .btn-action { background: #334155; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 10px; color: #FFF; font-weight: 700; cursor: pointer; }
-        input { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; text-align: center; width: 100%; }
+        .btn-sync { background: #1e3a5f; border: 1px solid #3B82F6; padding: 6px 14px; border-radius: 6px; font-size: 10px; color: #60a5fa; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-sync:hover:not(:disabled) { background: #1e40af; }
+        .btn-sync:disabled { opacity: 0.5; cursor: not-allowed; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .syncing { animation: blink 0.9s infinite; }
+        input[type="number"], input[type="text"] { background: #000; border: 1px solid var(--border); color: var(--yellow); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; text-align: center; width: 100%; }
+        select { background: #1E293B; border: 1px solid var(--border); color: #FFF; padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 10px; cursor: pointer; }
         .chart-container { position: relative; height: 320px; width: 100%; margin-top: 10px; }
+        .ok { color: #22c55e; } .err { color: #FB7185; } .warn { color: #FDE047; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
-    <div class="max-w-[1400px] mx-auto">
-        <header class="header-box">
-            <div class="flex flex-col sm:flex-row items-center gap-4">
-                <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v7.6</span></span>
-                <nav class="flex bg-slate-900/50 p-1 rounded-lg">
-                    <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
-                    <button id="tab-radar" onclick="switchTab('radar')" class="tab-btn">RADAR</button>
-                </nav>
-            </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                <div class="text-[9px] mono text-slate-500 text-right leading-tight uppercase">
-                    <span id="load-status">DEFENSE_MODE: ON</span><br><span id="last-sync-date">UPDATE: --</span>
+<div class="max-w-[1400px] mx-auto">
+
+    <header class="header-box">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+            <span class="title-text uppercase">Hunter_Terminal <span class="text-[9px] font-mono not-italic text-slate-500">v8.0</span></span>
+            <nav class="flex bg-slate-900/50 p-1 rounded-lg">
+                <button id="tab-decide" onclick="switchTab('decide')" class="tab-btn active">DECISION</button>
+                <button id="tab-radar"  onclick="switchTab('radar')"  class="tab-btn">RADAR</button>
+            </nav>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <!-- Ticker selector -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <label class="text-[9px] font-bold text-slate-500 uppercase">Ticker</label>
+                <select id="ticker-select" onchange="onTickerChange()" style="min-width:155px">
+                    <option value="3711">3711 ASMedia</option>
+                    <option value="2454">2454 MediaTek</option>
+                    <option value="2382">2382 Quanta</option>
+                    <option value="3034">3034 Novatek</option>
+                    <option value="2303">2303 UMC</option>
+                    <option value="2308">2308 Delta Elec.</option>
+                    <option value="2357">2357 Asus</option>
+                    <option value="2379">2379 Realtek</option>
+                    <option value="custom">Custom...</option>
+                </select>
+                <input type="text" id="custom-ticker" placeholder="e.g. 2330" maxlength="6"
+                       style="width:70px;display:none" oninput="onCustomTickerInput()" class="text-[10px]">
+                <div class="flex items-center gap-1">
+                    <label class="text-[9px] text-slate-500 uppercase">EPS</label>
+                    <input type="number" id="input-eps" step="0.1" min="0.1" style="width:65px" onchange="calculate()" class="text-[10px]">
                 </div>
+            </div>
+
+            <!-- Sync controls -->
+            <div class="flex items-center gap-2">
+                <div class="text-[9px] mono text-slate-500 text-right leading-tight uppercase">
+                    <span id="load-status">OFFLINE</span><br>
+                    <span id="last-sync-time">SYNC: --</span>
+                </div>
+                <button id="sync-btn" onclick="fetchAllData()" class="btn-sync">AUTO_SYNC</button>
                 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('file-input').click()" class="btn-action">LOAD_INTEL</button>
+                <button onclick="document.getElementById('file-input').click()" class="btn-action" title="Load JSON fallback">JSON</button>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5 mt-4">
-            <div class="md:col-span-3 space-y-4">
-                <section class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
-                    <h2 class="text-[9px] font-black text-slate-500 uppercase mb-4 border-b border-slate-700 pb-1 italic text-slate-400">Context</h2>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center"><span class="text-xs">TSM ADR</span><div class="text-right font-bold"><p id="adr-price" class="mono text-lg text-white">--</p><p id="adr-change" class="text-[10px]">--</p></div></div>
-                        <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono text-white">--</span></div>
-                        <div class="flex justify-between text-xs text-slate-400"><span>3711 Close</span><span id="stock-3711-market" class="mono text-white">--</span></div>
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 text-yellow-400 font-bold"><span class="text-[9px]">PREM %</span><span id="premium-val" class="mono text-xl">--</span></div>
-                    </div>
-                </section>
-                <section class="bg-card border border-slate-700 p-4 rounded-lg text-xs font-bold uppercase text-slate-400">
-                    <div><label class="block mb-1">Capital</label><input type="number" id="input-capital" value="570000" onchange="calculate()"></div>
-                    <div class="mt-3"><label class="flex justify-between mb-1">ROI Goal <span id="roi-val-display" class="text-yellow-400">15%</span></label><input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full accent-yellow-400"></div>
-                </section>
-            </div>
+    <!-- DECISION TAB -->
+    <main id="view-decide" class="grid grid-cols-1 md:grid-cols-12 gap-5 mt-4">
 
-            <div class="md:col-span-5">
-                <section class="bg-card border border-slate-700 p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
-                    <div class="text-center">
-                        <h2 class="text-[9px] font-black text-slate-500 uppercase mb-8 tracking-widest italic text-slate-400">Tactical Positioning</h2>
-                        <div class="grid grid-cols-2 gap-8">
-                            <div><p class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p><input type="number" id="target-3711" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none"><p id="dist-3711" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
-                            <div class="border-l border-slate-700 pl-4"><p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p><input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400"><p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p></div>
+        <div class="md:col-span-3 space-y-4">
+            <section class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
+                <h2 class="text-[9px] font-black text-slate-400 uppercase mb-4 border-b border-slate-700 pb-1 italic">Context</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs">TSM ADR</span>
+                        <div class="text-right font-bold">
+                            <p id="adr-price" class="mono text-lg text-white">--</p>
+                            <p id="adr-change" class="text-[10px]">--</p>
                         </div>
                     </div>
-                    <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-700 flex items-center justify-between mt-6">
-                        <div class="flex items-center gap-3"><span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span><span id="action-text" class="text-xl font-bold uppercase italic tracking-tighter">Ready</span></div>
-                        <div class="text-right leading-tight"><p class="text-[10px] text-blue-400 font-bold mono">FX: <span id="fx-display">--</span></p><p class="text-[10px] text-rose-400 font-bold mono">VIX: <span id="vix-display">--</span></p></div>
+                    <div class="flex justify-between text-xs text-slate-400"><span>2330 Close</span><span id="stock-2330-market" class="mono text-white">--</span></div>
+                    <div class="flex justify-between text-xs text-slate-400"><span id="secondary-label">3711 Close</span><span id="stock-secondary-market" class="mono text-white">--</span></div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-700 text-yellow-400 font-bold">
+                        <span class="text-[9px]">PREM %</span><span id="premium-val" class="mono text-xl">--</span>
                     </div>
-                </section>
+                </div>
+            </section>
+
+            <section class="bg-card border border-slate-700 p-4 rounded-lg text-xs font-bold uppercase text-slate-400">
+                <div><label class="block mb-1">Capital</label><input type="number" id="input-capital" value="570000" onchange="calculate()"></div>
+                <div class="mt-3">
+                    <label class="flex justify-between mb-1">ROI Goal <span id="roi-val-display" class="text-yellow-400">15%</span></label>
+                    <input type="range" id="input-roi" min="5" max="40" value="15" oninput="calculate()" class="w-full accent-yellow-400">
+                </div>
+            </section>
+        </div>
+
+        <div class="md:col-span-5">
+            <section class="bg-card border border-slate-700 p-6 rounded-lg h-full flex flex-col justify-between shadow-2xl">
+                <div class="text-center">
+                    <h2 class="text-[9px] font-black text-slate-400 uppercase mb-8 tracking-widest italic">Tactical Positioning</h2>
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <p id="secondary-target-label" class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p>
+                            <input type="number" id="target-secondary" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none">
+                            <p id="dist-secondary" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p>
+                        </div>
+                        <div class="border-l border-slate-700 pl-4">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p>
+                            <input type="number" id="target-2330" step="1" onchange="calculate()" class="w-full text-4xl font-black text-center border-none text-yellow-400">
+                            <p id="dist-2330" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-700 flex items-center justify-between mt-6">
+                    <div class="flex items-center gap-3">
+                        <span id="status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span>
+                        <span id="action-text" class="text-xl font-bold uppercase italic tracking-tighter">Ready</span>
+                    </div>
+                    <div class="text-right leading-tight">
+                        <p class="text-[10px] text-blue-400 font-bold mono">FX: <span id="fx-display">--</span></p>
+                        <p class="text-[10px] text-rose-400 font-bold mono">VIX: <span id="vix-display">--</span></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="md:col-span-4">
+            <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold uppercase">
+                <h2 class="text-[9px] font-black text-slate-400 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center">Outcome</h2>
+                <div class="space-y-6 text-xs">
+                    <div class="flex justify-between items-center"><span id="pe-label">3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div>
+                    <div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div>
+                    <div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- RADAR TAB -->
+    <main id="view-radar" class="hidden space-y-5 mt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-card border border-slate-700 p-5 rounded-lg">
+                <h2 id="chart-secondary-title" class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2>
+                <div class="chart-container"><canvas id="chart-secondary"></canvas></div>
             </div>
-
-            <div class="md:col-span-4">
-                <section class="bg-card border border-slate-700 p-6 rounded-lg shadow-xl h-full font-bold uppercase"><h2 class="text-[9px] font-black text-slate-500 uppercase mb-6 border-b border-slate-700 pb-2 italic text-center text-slate-400">Outcome</h2><div class="space-y-6 text-xs"><div class="flex justify-between items-center"><span>3711 Fwd P/E</span><span id="res-pe" class="mono text-yellow-400 text-xl">--</span></div><div class="flex justify-between items-center"><span>2330 Odd Lots</span><span id="res-2330-share" class="mono text-white text-base">--</span></div><div class="flex justify-between items-center border-t border-slate-700 pt-6 text-slate-500"><span>Capital Used</span><span id="res-used" class="mono text-white text-base">--</span></div></div></section>
+            <div class="bg-card border border-slate-700 p-5 rounded-lg">
+                <h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2>
+                <div class="chart-container"><canvas id="chart-2330"></canvas></div>
             </div>
-        </main>
+        </div>
+        <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
+            <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX & VIX Index</h2>
+            <div class="chart-container" style="height:150px"><canvas id="chart-macro"></canvas></div>
+        </div>
+    </main>
 
-        <main id="view-radar" class="hidden space-y-5 mt-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">3711 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-3711"></canvas></div></div>
-                <div class="bg-card border border-slate-700 p-5 rounded-lg"><h2 class="text-[10px] font-black text-slate-500 uppercase mb-4 text-center italic">2330 Gravity Gap (%)</h2><div class="chart-container"><canvas id="chart-2330"></canvas></div></div>
+    <!-- HISTORY FOOTER -->
+    <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden">
+        <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic">
+            <span>Intelligence Feed</span>
+            <div class="flex items-center gap-4">
+                <label class="flex items-center gap-1 cursor-pointer normal-case">
+                    <input type="checkbox" id="auto-refresh-toggle" onchange="toggleAutoRefresh()" class="accent-yellow-400">
+                    <span>Auto-refresh 15m</span>
+                </label>
+                <button onclick="clearHistory()" class="text-rose-400 font-bold">Reset System</button>
             </div>
-            <div class="bg-card border border-slate-700 p-5 rounded-lg shadow-xl">
-                <h2 class="text-[10px] font-black text-blue-400 uppercase italic mb-1 text-center">Macro Shield: FX & VIX Index</h2>
-                <div class="chart-container" style="height: 150px;"><canvas id="chart-macro"></canvas></div>
-            </div>
-        </main>
+        </div>
+        <div class="max-h-28 overflow-y-auto">
+            <table class="w-full text-left text-[11px] mono border-collapse">
+                <thead class="bg-slate-800 text-slate-500 uppercase text-[8px]">
+                    <tr>
+                        <th class="p-3">Date</th>
+                        <th class="p-3">ADR</th>
+                        <th class="p-3">2330</th>
+                        <th id="hist-secondary-col" class="p-3">3711</th>
+                        <th class="p-3">FX</th>
+                        <th class="p-3">VIX</th>
+                        <th class="p-3">Prem%</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body" class="divide-y divide-slate-800"></tbody>
+            </table>
+        </div>
+    </footer>
+</div>
 
-        <footer class="mt-6 bg-card border border-slate-700 rounded-lg overflow-hidden">
-            <div class="bg-slate-900 p-2 text-[8px] font-bold text-slate-500 flex justify-between uppercase italic"><span>Intelligence Feed</span><button onclick="clearHistory()" class="text-rose-400 font-bold">Reset System</button></div>
-            <div class="max-h-28 overflow-y-auto"><table class="w-full text-left text-[11px] mono border-collapse"><thead class="bg-slate-800 text-slate-500 uppercase text-[8px]"><tr><th class="p-3">Date</th><th class="p-3">ADR</th><th class="p-3">2330</th><th class="p-3">FX</th><th class="p-3">VIX</th><th class="p-3">Prem</th></tr></thead><tbody id="history-body" class="divide-y divide-slate-800"></tbody></table></div>
-        </footer>
-    </div>
+<script>
+Chart.register(ChartDataLabels);
 
-    <script>
-        Chart.register(ChartDataLabels);
-        let marketData = null;
-        let history = JSON.parse(localStorage.getItem('HT_V76_HISTORY') || '[]');
-        let chartInstances = {};
+// ── Ticker catalogue ──────────────────────────────────────────────────────────
+const TICKERS = {
+    '3711': { name: 'ASMedia',    eps: 14.53 },
+    '2454': { name: 'MediaTek',   eps: 75.00 },
+    '2382': { name: 'Quanta',     eps: 15.00 },
+    '3034': { name: 'Novatek',    eps: 45.00 },
+    '2303': { name: 'UMC',        eps:  3.50 },
+    '2308': { name: 'Delta',      eps:  9.00 },
+    '2357': { name: 'Asus',       eps: 30.00 },
+    '2379': { name: 'Realtek',    eps: 35.00 },
+};
 
-        // 防禦性格式化
-        const safeNum = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
-        const safePct = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
+// ── State ─────────────────────────────────────────────────────────────────────
+let marketData     = null;
+let currentTicker  = '3711';
+let history        = [];
+let chartInstances = {};
+let refreshTimer   = null;
 
-        window.onload = () => {
-            initCharts();
-            const getVal = (k, d) => localStorage.getItem('HT_V76_' + k) || localStorage.getItem('HT_V75_' + k) || d;
-            document.getElementById('input-capital').value = getVal('CAP', '570000');
-            document.getElementById('input-roi').value = getVal('ROI', '15');
-            document.getElementById('target-3711').value = getVal('T3711', '330');
-            document.getElementById('target-2330').value = getVal('T2330', '1850');
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const safeNum = (v, d = 0) => { const n = parseFloat(v); return isNaN(n) ? d : n; };
+const safePct = (v) => (safeNum(v) >= 0 ? '+' : '') + safeNum(v).toFixed(1) + '%';
+const histKey  = () => `HT_V80_HIST_${currentTicker}`;
+const snapKey  = () => `HT_V80_SNAP_${currentTicker}`;
 
-            const last = localStorage.getItem('HT_V76_SNAP') || localStorage.getItem('HT_V75_SNAP');
-            if(last) {
-                marketData = JSON.parse(last);
-                marketData.adr_change = safeNum(marketData.adr_change);
-                marketData.usd_twd = safeNum(marketData.usd_twd, 31.54);
-                marketData.vix = safeNum(marketData.vix, 19.0);
-                history = history.map(h => ({ ...h, fx: safeNum(h.fx, 31.54), vix: safeNum(h.vix, 19.0) }));
-                updateMarketUI(); renderHistory(); calculate(); updateCharts();
-            }
+// ── Boot ──────────────────────────────────────────────────────────────────────
+window.onload = () => {
+    initCharts();
+
+    currentTicker = localStorage.getItem('HT_V80_TICKER') || '3711';
+    const knownTicker = !!TICKERS[currentTicker];
+    const sel = document.getElementById('ticker-select');
+    sel.value = knownTicker ? currentTicker : 'custom';
+    if (!knownTicker) {
+        document.getElementById('custom-ticker').style.display = '';
+        document.getElementById('custom-ticker').value = currentTicker;
+    }
+
+    const savedEps = localStorage.getItem(`HT_V80_EPS_${currentTicker}`);
+    document.getElementById('input-eps').value = savedEps || (TICKERS[currentTicker]?.eps ?? '');
+
+    const getVal = (k, d) => localStorage.getItem('HT_V80_' + k)
+                           || localStorage.getItem('HT_V76_' + k)
+                           || localStorage.getItem('HT_V75_' + k)
+                           || d;
+    document.getElementById('input-capital').value    = getVal('CAP',   '570000');
+    document.getElementById('input-roi').value        = getVal('ROI',   '15');
+    document.getElementById('target-secondary').value = localStorage.getItem(`HT_V80_TSEC_${currentTicker}`) || getVal('T3711', '330');
+    document.getElementById('target-2330').value      = getVal('T2330', '1850');
+
+    history = JSON.parse(localStorage.getItem(histKey()) || '[]');
+    const snap = localStorage.getItem(snapKey())
+              || localStorage.getItem('HT_V76_SNAP')
+              || localStorage.getItem('HT_V75_SNAP');
+    if (snap) {
+        marketData = JSON.parse(snap);
+        marketData.usd_twd = safeNum(marketData.usd_twd, 31.54);
+        marketData.vix     = safeNum(marketData.vix, 19.0);
+        updateMarketUI(); renderHistory(); calculate(); updateCharts();
+    }
+
+    updateTickerLabels();
+};
+
+// ── Ticker selection ──────────────────────────────────────────────────────────
+function onTickerChange() {
+    const val  = document.getElementById('ticker-select').value;
+    const cust = document.getElementById('custom-ticker');
+    if (val === 'custom') { cust.style.display = ''; cust.value = ''; cust.focus(); return; }
+    cust.style.display = 'none';
+    applyTicker(val);
+}
+
+function onCustomTickerInput() {
+    const val = document.getElementById('custom-ticker').value.trim().toUpperCase();
+    if (val.length >= 4) applyTicker(val);
+}
+
+function applyTicker(ticker) {
+    currentTicker = ticker;
+    localStorage.setItem('HT_V80_TICKER', ticker);
+
+    const savedEps = localStorage.getItem(`HT_V80_EPS_${ticker}`);
+    document.getElementById('input-eps').value = savedEps || (TICKERS[ticker]?.eps ?? '');
+
+    const savedTarget = localStorage.getItem(`HT_V80_TSEC_${ticker}`);
+    document.getElementById('target-secondary').value = savedTarget || '';
+
+    history = JSON.parse(localStorage.getItem(histKey()) || '[]');
+
+    const snap = localStorage.getItem(snapKey());
+    if (snap) {
+        marketData = JSON.parse(snap);
+        marketData.usd_twd = safeNum(marketData.usd_twd, 31.54);
+        marketData.vix     = safeNum(marketData.vix, 19.0);
+        updateMarketUI(); calculate();
+    } else {
+        marketData = null;
+        ['adr-price','adr-change','stock-2330-market','stock-secondary-market',
+         'premium-val','fx-display','vix-display'].forEach(id => {
+            document.getElementById(id).innerText = '--';
+        });
+    }
+
+    renderHistory(); updateCharts(); updateTickerLabels();
+}
+
+function updateTickerLabels() {
+    const t = currentTicker;
+    document.getElementById('secondary-label').innerText        = `${t} Close`;
+    document.getElementById('secondary-target-label').innerText = `${t} Target`;
+    document.getElementById('pe-label').innerText               = `${t} Fwd P/E`;
+    document.getElementById('chart-secondary-title').innerText  = `${t} Gravity Gap (%)`;
+    document.getElementById('hist-secondary-col').innerText     = t;
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(t) {
+    document.getElementById('view-decide').classList.toggle('hidden', t !== 'decide');
+    document.getElementById('view-radar').classList.toggle('hidden',  t !== 'radar');
+    document.getElementById('tab-decide').classList.toggle('active',  t === 'decide');
+    document.getElementById('tab-radar').classList.toggle('active',   t === 'radar');
+    if (t === 'radar') setTimeout(updateCharts, 50);
+}
+
+// ── Calculation ───────────────────────────────────────────────────────────────
+function calculate() {
+    if (!marketData) return;
+
+    const cap   = safeNum(document.getElementById('input-capital').value, 570000);
+    const roi   = safeNum(document.getElementById('input-roi').value, 15);
+    const tSec  = safeNum(document.getElementById('target-secondary').value);
+    const t2330 = safeNum(document.getElementById('target-2330').value, 1850);
+    const eps   = safeNum(document.getElementById('input-eps').value, TICKERS[currentTicker]?.eps || 1);
+
+    localStorage.setItem('HT_V80_CAP',  cap);
+    localStorage.setItem('HT_V80_ROI',  roi);
+    localStorage.setItem(`HT_V80_TSEC_${currentTicker}`, tSec);
+    localStorage.setItem('HT_V80_T2330', t2330);
+    localStorage.setItem(`HT_V80_EPS_${currentTicker}`,  eps);
+
+    const curSec  = safeNum(marketData.stock_secondary_current || marketData.stock_3711_current, tSec || 330);
+    const cur2330 = safeNum(marketData.stock_2330_current, 1915);
+    const fx      = safeNum(marketData.usd_twd, 31.54);
+    const vix     = safeNum(marketData.vix, 19.0);
+    const adr     = safeNum(marketData.tsm_adr);
+
+    const s2330 = Math.max(0, Math.floor((cap - tSec * 1000) / t2330));
+    const dSec  = tSec ? ((curSec  / tSec  ) - 1) * 100 : 0;
+    const d2330 =         ((cur2330 / t2330) - 1) * 100;
+    const prem  = adr  ? ((adr / 5 * fx / cur2330) - 1) * 100 : NaN;
+
+    document.getElementById('res-pe').innerText          = (eps && tSec) ? (tSec / eps).toFixed(1) + 'X' : '--';
+    document.getElementById('res-2330-share').innerText  = s2330 + ' 股';
+    document.getElementById('res-used').innerText        = (tSec * 1000 + s2330 * t2330).toLocaleString();
+    document.getElementById('dist-secondary').innerText  = 'Gap: ' + safePct(dSec);
+    document.getElementById('dist-2330').innerText       = 'Gap: ' + safePct(d2330);
+    document.getElementById('roi-val-display').innerText = roi + '%';
+    document.getElementById('premium-val').innerText     = isNaN(prem) ? '--' : safeNum(prem).toFixed(1) + '%';
+    document.getElementById('fx-display').innerText      = fx.toFixed(2);
+    document.getElementById('vix-display').innerText     = vix.toFixed(1);
+
+    const dot = document.getElementById('status-dot');
+    if (tSec && curSec <= tSec) {
+        dot.style.backgroundColor = '#FDE047';
+        document.getElementById('action-text').innerText = 'CMD: BUY';
+    } else {
+        dot.style.backgroundColor = '#64748B';
+        document.getElementById('action-text').innerText = 'LURKING';
+    }
+}
+
+// ── Auto-fetch from Yahoo Finance via CORS proxy ──────────────────────────────
+async function proxyFetch(yahooUrl) {
+    try {
+        const r = await fetch(
+            `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
+            { signal: AbortSignal.timeout(9000) }
+        );
+        if (r.ok) return await r.json();
+    } catch {}
+
+    // Fallback: allorigins wraps the body in { contents: "..." }
+    const r2 = await fetch(
+        `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`,
+        { signal: AbortSignal.timeout(12000) }
+    );
+    if (!r2.ok) throw new Error('All proxies failed');
+    const w = await r2.json();
+    return JSON.parse(w.contents);
+}
+
+async function fetchQuote(symbol) {
+    const url  = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=2d`;
+    const data = await proxyFetch(url);
+    const meta = data.chart.result[0].meta;
+    return {
+        price:     meta.regularMarketPrice,
+        changePct: meta.regularMarketChangePercent ?? 0,
+    };
+}
+
+async function fetchAllData() {
+    const btn      = document.getElementById('sync-btn');
+    const statusEl = document.getElementById('load-status');
+    btn.disabled = true;
+    btn.classList.add('syncing');
+    btn.innerText      = 'SYNCING...';
+    statusEl.innerText = 'FETCHING...';
+    statusEl.className = 'warn';
+
+    try {
+        const [tsm, tw2330, twSec, fx, vix] = await Promise.all([
+            fetchQuote('TSM'),
+            fetchQuote('2330.TW'),
+            fetchQuote(`${currentTicker}.TW`),
+            fetchQuote('TWD=X'),
+            fetchQuote('%5EVIX'),
+        ]);
+
+        const today = new Date().toISOString().split('T')[0];
+
+        marketData = {
+            date:                    today,
+            tsm_adr:                 tsm.price,
+            adr_change:              tsm.changePct,
+            stock_2330_current:      tw2330.price,
+            stock_secondary_current: twSec.price,
+            stock_3711_current:      twSec.price,   // backward-compat
+            usd_twd:                 fx.price,
+            vix:                     vix.price,
         };
 
-        function switchTab(t) {
-            document.getElementById('view-decide').classList.toggle('hidden', t !== 'decide');
-            document.getElementById('view-radar').classList.toggle('hidden', t !== 'radar');
-            document.getElementById('tab-decide').classList.toggle('active', t === 'decide');
-            document.getElementById('tab-radar').classList.toggle('active', t === 'radar');
-            if(t === 'radar') setTimeout(updateCharts, 50);
+        if (!history.find(h => h.date === today)) {
+            history.push({ date: today, adr: tsm.price, p2330: tw2330.price,
+                           pSec: twSec.price, fx: fx.price, vix: vix.price });
+            history.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem(histKey(), JSON.stringify(history));
         }
+        localStorage.setItem(snapKey(), JSON.stringify(marketData));
 
-        function calculate() {
-            if(!marketData) return;
-            const cap = safeNum(document.getElementById('input-capital').value, 570000);
-            const roi = safeNum(document.getElementById('input-roi').value, 15);
-            const t3711 = safeNum(document.getElementById('target-3711').value, 330);
-            const t2330 = safeNum(document.getElementById('target-2330').value, 1850);
+        updateMarketUI(); renderHistory(); calculate(); updateCharts();
 
-            localStorage.setItem('HT_V76_CAP', cap);
-            localStorage.setItem('HT_V76_ROI', roi);
-            localStorage.setItem('HT_V76_T3711', t3711);
-            localStorage.setItem('HT_V76_T2330', t2330);
+        const now = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('last-sync-time').innerText = `SYNC: ${now}`;
+        statusEl.innerText = 'LIVE';
+        statusEl.className = 'ok';
+    } catch (err) {
+        statusEl.innerText = 'FETCH_ERR';
+        statusEl.className = 'err';
+        console.error('fetchAllData:', err);
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('syncing');
+        btn.innerText = 'AUTO_SYNC';
+    }
+}
 
-            const s2330 = Math.floor((cap - (t3711 * 1000)) / t2330);
-            const d3711 = ((safeNum(marketData.stock_3711_current, 354.5) / t3711) - 1) * 100;
-            const d2330 = ((safeNum(marketData.stock_2330_current, 1915) / t2330) - 1) * 100;
+function toggleAutoRefresh() {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+    if (document.getElementById('auto-refresh-toggle').checked) {
+        fetchAllData();
+        refreshTimer = setInterval(fetchAllData, 15 * 60 * 1000);
+    }
+}
 
-            document.getElementById('res-pe').innerText = (t3711 / 14.53).toFixed(1) + "X";
-            document.getElementById('res-2330-share').innerText = (s2330 > 0 ? s2330 : 0) + " 股";
-            document.getElementById('res-used').innerText = (t3711*1000 + (s2330 > 0 ? s2330*t2330 : 0)).toLocaleString();
-            document.getElementById('dist-3711').innerText = 'Gap: ' + safePct(d3711);
-            document.getElementById('dist-2330').innerText = 'Gap: ' + safePct(d2330);
-            document.getElementById('roi-val-display').innerText = roi + "%";
-
-            const p = ((safeNum(marketData.tsm_adr) / 5 * safeNum(marketData.usd_twd, 31.54) / safeNum(marketData.stock_2330_current, 1915)) - 1) * 100;
-            document.getElementById('premium-val').innerText = safeNum(p).toFixed(1) + "%";
-            document.getElementById('fx-display').innerText = safeNum(marketData.usd_twd, 31.54).toFixed(2);
-            document.getElementById('vix-display').innerText = safeNum(marketData.vix, 19.0).toFixed(1);
-            
-            const dot = document.getElementById('status-dot');
-            if (safeNum(marketData.stock_3711_current) <= t3711) { dot.style.backgroundColor = '#FDE047'; document.getElementById('action-text').innerText = "CMD: BUY"; }
-            else { dot.style.backgroundColor = '#64748B'; document.getElementById('action-text').innerText = "LURKING"; }
-        }
-
-        function handleFileUpload(e) {
-            const r = new FileReader();
-            r.onload = (ev) => {
-                const data = JSON.parse(ev.target.result);
-                const items = Array.isArray(data) ? data : [data];
-                items.forEach(i => {
-                    if (!history.find(h => h.date === i.date)) {
-                        history.push({ 
-                            date: i.date, adr: safeNum(i.tsm_adr), p2330: safeNum(i.stock_2330_current, 1915), p3711: safeNum(i.stock_3711_current, 354.5), fx: safeNum(i.usd_twd, 31.54), vix: safeNum(i.vix, 19.0)
-                        });
-                    }
+// ── JSON file fallback ────────────────────────────────────────────────────────
+function handleFileUpload(e) {
+    const r = new FileReader();
+    r.onload = (ev) => {
+        const raw   = JSON.parse(ev.target.result);
+        const items = Array.isArray(raw) ? raw : [raw];
+        items.forEach(i => {
+            if (!history.find(h => h.date === i.date)) {
+                history.push({
+                    date:  i.date,
+                    adr:   safeNum(i.tsm_adr),
+                    p2330: safeNum(i.stock_2330_current, 1915),
+                    pSec:  safeNum(i.stock_secondary_current || i.stock_3711_current, 330),
+                    fx:    safeNum(i.usd_twd, 31.54),
+                    vix:   safeNum(i.vix, 19.0),
                 });
-                history.sort((a,b) => new Date(a.date) - new Date(b.date));
-                marketData = items[items.length - 1];
-                localStorage.setItem('HT_V76_SNAP', JSON.stringify(marketData));
-                localStorage.setItem('HT_V76_HISTORY', JSON.stringify(history));
-                updateMarketUI(); renderHistory(); calculate(); updateCharts();
-            };
-            r.readAsText(e.target.files[0]);
-        }
+            }
+        });
+        history.sort((a, b) => new Date(a.date) - new Date(b.date));
+        marketData = items[items.length - 1];
+        marketData.stock_secondary_current = marketData.stock_secondary_current
+                                          || marketData.stock_3711_current;
+        localStorage.setItem(snapKey(), JSON.stringify(marketData));
+        localStorage.setItem(histKey(), JSON.stringify(history));
+        updateMarketUI(); renderHistory(); calculate(); updateCharts();
+    };
+    r.readAsText(e.target.files[0]);
+}
 
-        function updateMarketUI() {
-            document.getElementById('adr-price').innerText = "$" + safeNum(marketData.tsm_adr).toFixed(2);
-            document.getElementById('adr-change').innerText = safePct(safeNum(marketData.adr_change));
-            document.getElementById('stock-2330-market').innerText = safeNum(marketData.stock_2330_current, 1915);
-            document.getElementById('stock-3711-market').innerText = safeNum(marketData.stock_3711_current, 354.5);
-            document.getElementById('last-sync-date').innerText = marketData.date;
-        }
+// ── UI update ─────────────────────────────────────────────────────────────────
+function updateMarketUI() {
+    if (!marketData) return;
+    const pct = safeNum(marketData.adr_change);
+    document.getElementById('adr-price').innerText              = '$' + safeNum(marketData.tsm_adr).toFixed(2);
+    document.getElementById('adr-change').innerText             = safePct(pct);
+    document.getElementById('adr-change').style.color           = pct >= 0 ? '#22c55e' : '#FB7185';
+    document.getElementById('stock-2330-market').innerText      = safeNum(marketData.stock_2330_current, 1915);
+    document.getElementById('stock-secondary-market').innerText = safeNum(marketData.stock_secondary_current || marketData.stock_3711_current);
+    document.getElementById('last-sync-time').innerText         = marketData.date;
+}
 
-        function renderHistory() {
-            document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
-                const pr = ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54) / safeNum(h.p2330, 1915)) - 1) * 100;
-                return `<tr class="hover:bg-slate-800 text-[10px]"><td class="p-3 text-slate-500 font-bold">${h.date}</td><td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td><td class="p-3">${h.p2330}</td><td class="p-3 text-blue-400">${safeNum(h.fx).toFixed(2)}</td><td class="p-3 text-rose-400">${safeNum(h.vix).toFixed(1)}</td><td class="p-3 text-yellow-400 font-bold">${safeNum(pr).toFixed(1)}%</td></tr>`
-            }).join('');
-        }
+function renderHistory() {
+    document.getElementById('history-body').innerHTML = history.slice().reverse().map(h => {
+        const prem = ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54) / safeNum(h.p2330, 1915)) - 1) * 100;
+        return `<tr class="hover:bg-slate-800 text-[10px]">
+            <td class="p-3 text-slate-500 font-bold">${h.date}</td>
+            <td class="p-3 text-white">$${safeNum(h.adr).toFixed(2)}</td>
+            <td class="p-3">${safeNum(h.p2330)}</td>
+            <td class="p-3">${safeNum(h.pSec || h.p3711) || '--'}</td>
+            <td class="p-3 text-blue-400">${safeNum(h.fx).toFixed(2)}</td>
+            <td class="p-3 text-rose-400">${safeNum(h.vix).toFixed(1)}</td>
+            <td class="p-3 text-yellow-400 font-bold">${safeNum(prem).toFixed(1)}%</td>
+        </tr>`;
+    }).join('');
+}
 
-        function initCharts() {
-            const gapOpt = () => ({
-                type: 'bar', data: { labels: [], datasets: [{ label: 'Market', data: [], backgroundColor: 'rgba(59, 130, 246, 0.7)', borderRadius: 4, barPercentage: 0.5 }, { label: 'Target', data: [], backgroundColor: 'rgba(253, 224, 71, 0.7)', borderRadius: 4, barPercentage: 0.5 }]},
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { callbacks: { label: (ctx) => "Gap: " + safePct(Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw) }}, 
-                        datalabels: { display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4, formatter: (v) => safePct(Array.isArray(v) ? v[1] : v), font: { size: 10, weight: 'bold' }}
-                    }, 
-                    scales: { x: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, color: '#64748B' }}, y: { grid: { color: '#334155' }, ticks: { callback: v => v + '%', color: '#94A3B8', font: { size: 8 } }}}
-                }
-            });
-            chartInstances.c3711 = new Chart(document.getElementById('chart-3711'), gapOpt());
-            chartInstances.c2330 = new Chart(document.getElementById('chart-2330'), gapOpt());
-            chartInstances.macro = new Chart(document.getElementById('chart-macro'), {
-                type: 'line', data: { labels: [], datasets: [{ label: 'FX', data: [], borderColor: '#3B82F6', borderWidth: 2, yAxisID: 'yFX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 }, { label: 'VIX', data: [], backgroundColor: 'rgba(251, 113, 133, 0.2)', borderColor: '#FB7185', borderWidth: 1, fill: true, yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 }]},
-                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', callbacks: { label: (c) => c.dataset.label + ": " + Number(c.raw || 0).toFixed(c.dataset.label==='FX'?2:1) }}}, scales: { x: { display: false }, yFX: { type: 'linear', position: 'left', grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}}, yVIX: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#FB7185', font: { size: 8 }}}}}
-            });
-        }
+// ── Charts ────────────────────────────────────────────────────────────────────
+function initCharts() {
+    const gapOpt = () => ({
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'Market', data: [], backgroundColor: 'rgba(59,130,246,0.7)',  borderRadius: 4, barPercentage: 0.5 },
+                { label: 'Target', data: [], backgroundColor: 'rgba(253,224,71,0.7)',  borderRadius: 4, barPercentage: 0.5 },
+            ],
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => 'Gap: ' + safePct(Array.isArray(ctx.raw) ? ctx.raw[1] : ctx.raw) }},
+                datalabels: { display: true, color: '#FFF', anchor: 'end', align: 'top', offset: 4,
+                    formatter: v => safePct(Array.isArray(v) ? v[1] : v),
+                    font: { size: 10, weight: 'bold' } },
+            },
+            scales: {
+                x: { grid: { color: '#1E293B' }, ticks: { font: { size: 8 }, color: '#64748B' }},
+                y: { grid: { color: '#334155' }, ticks: { callback: v => v + '%', color: '#94A3B8', font: { size: 8 } }},
+            },
+        },
+    });
 
-        function updateCharts() {
-            if (history.length === 0) return;
-            const lbl = history.map(h => h.date);
-            const t37 = safeNum(document.getElementById('target-3711').value, 330);
-            const t23 = safeNum(document.getElementById('target-2330').value, 1850);
-            chartInstances.c3711.data.labels = lbl;
-            chartInstances.c3711.data.datasets[0].data = history.map(h => [0, ((safeNum(h.adr)/5*safeNum(h.fx, 31.54)*(h.p3711/h.p2330))/h.p3711 - 1)*100]);
-            chartInstances.c3711.data.datasets[1].data = history.map(h => [0, (t37 / safeNum(h.p3711, 354.5) - 1) * 100]);
-            chartInstances.c3711.update();
-            chartInstances.c2330.data.labels = lbl;
-            chartInstances.c2330.data.datasets[0].data = history.map(h => [0, ((safeNum(h.adr)/5*safeNum(h.fx, 31.54))/safeNum(h.p2330, 1915) - 1)*100]);
-            chartInstances.c2330.data.datasets[1].data = history.map(h => [0, (t23 / safeNum(h.p2330, 1915) - 1) * 100]);
-            chartInstances.c2330.update();
-            chartInstances.macro.data.labels = lbl;
-            chartInstances.macro.data.datasets[0].data = history.map(h => safeNum(h.fx, 31.54));
-            chartInstances.macro.data.datasets[1].data = history.map(h => safeNum(h.vix, 19.0));
-            chartInstances.macro.update();
-        }
+    chartInstances.cSec  = new Chart(document.getElementById('chart-secondary'), gapOpt());
+    chartInstances.c2330 = new Chart(document.getElementById('chart-2330'),      gapOpt());
+    chartInstances.macro = new Chart(document.getElementById('chart-macro'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'FX',  data: [], borderColor: '#3B82F6', borderWidth: 2,
+                  yAxisID: 'yFX',  tension: 0.3, pointRadius: 2, pointHoverRadius: 6 },
+                { label: 'VIX', data: [], borderColor: '#FB7185', borderWidth: 1,
+                  backgroundColor: 'rgba(251,113,133,0.2)', fill: true,
+                  yAxisID: 'yVIX', tension: 0.3, pointRadius: 2, pointHoverRadius: 6 },
+            ],
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                datalabels: { display: false },
+                tooltip: { backgroundColor: 'rgba(15,23,42,0.9)',
+                    callbacks: { label: c => c.dataset.label + ': ' + Number(c.raw||0).toFixed(c.dataset.label==='FX'?2:1) }},
+            },
+            scales: {
+                x:    { display: false },
+                yFX:  { type: 'linear', position: 'left',  grid: { color: '#1E293B' }, ticks: { color: '#3B82F6', font: { size: 8 }}},
+                yVIX: { type: 'linear', position: 'right', grid: { display: false },   ticks: { color: '#FB7185', font: { size: 8 }}},
+            },
+        },
+    });
+}
 
-        function clearHistory() { if(confirm("確定重置系統？")) { localStorage.clear(); location.reload(); } }
-    </script>
+function updateCharts() {
+    if (history.length === 0) return;
+    const lbl   = history.map(h => h.date);
+    const tSec  = safeNum(document.getElementById('target-secondary').value);
+    const t2330 = safeNum(document.getElementById('target-2330').value, 1850);
+
+    chartInstances.cSec.data.labels = lbl;
+    chartInstances.cSec.data.datasets[0].data = history.map(h => {
+        const pS  = safeNum(h.pSec || h.p3711, 1);
+        const p23 = safeNum(h.p2330, 1);
+        return [0, ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54) * (pS / p23)) / pS - 1) * 100];
+    });
+    chartInstances.cSec.data.datasets[1].data = history.map(h =>
+        [0, (tSec / safeNum(h.pSec || h.p3711, tSec || 1) - 1) * 100]
+    );
+    chartInstances.cSec.update();
+
+    chartInstances.c2330.data.labels = lbl;
+    chartInstances.c2330.data.datasets[0].data = history.map(h =>
+        [0, ((safeNum(h.adr) / 5 * safeNum(h.fx, 31.54)) / safeNum(h.p2330, 1915) - 1) * 100]
+    );
+    chartInstances.c2330.data.datasets[1].data = history.map(h =>
+        [0, (t2330 / safeNum(h.p2330, 1915) - 1) * 100]
+    );
+    chartInstances.c2330.update();
+
+    chartInstances.macro.data.labels = lbl;
+    chartInstances.macro.data.datasets[0].data = history.map(h => safeNum(h.fx,  31.54));
+    chartInstances.macro.data.datasets[1].data = history.map(h => safeNum(h.vix, 19.0));
+    chartInstances.macro.update();
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function clearHistory() {
+    if (confirm('確定重置系統？')) { localStorage.clear(); location.reload(); }
+}
+</script>
 </body>
 </html>
