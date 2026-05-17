@@ -115,9 +115,13 @@
                     <h2 class="text-[9px] font-black text-slate-400 uppercase mb-8 tracking-widest italic">Tactical Positioning</h2>
                     <div class="grid grid-cols-2 gap-8">
                         <div>
-                            <p id="secondary-target-label" class="text-[10px] text-slate-400 uppercase font-bold mb-3">3711 Target</p>
+                            <p id="secondary-target-label" class="text-[10px] text-slate-400 uppercase font-bold mb-1">3711 Target</p>
                             <input type="number" id="target-secondary" step="0.5" onchange="calculate()" class="w-full text-4xl font-black text-center border-none">
-                            <p id="dist-secondary" class="text-[10px] mt-2 mono text-slate-500 font-bold uppercase">Gap: --</p>
+                            <div class="flex items-center justify-center gap-2 mt-2">
+                                <label class="text-[9px] text-slate-500 uppercase">Lots</label>
+                                <input type="number" id="input-lots" value="1" min="0" max="20" step="1" onchange="calculate()" style="width:48px" class="text-[11px]">
+                            </div>
+                            <p id="dist-secondary" class="text-[9px] mt-1 mono text-slate-500 font-bold uppercase">Gap: --</p>
                         </div>
                         <div class="border-l border-slate-700 pl-4">
                             <p class="text-[10px] text-slate-400 uppercase font-bold mb-3 text-yellow-400">2330 Target</p>
@@ -178,6 +182,7 @@
                     <input type="checkbox" id="auto-refresh-toggle" onchange="toggleAutoRefresh()" class="accent-yellow-400">
                     <span>Auto-refresh 15m</span>
                 </label>
+                <button onclick="reloadHistory()" class="text-blue-400 font-bold">Reload 30D</button>
                 <button onclick="clearHistory()" class="text-rose-400 font-bold">Reset System</button>
             </div>
         </div>
@@ -243,6 +248,7 @@ window.onload = () => {
 
     const savedEps = localStorage.getItem(`HT_V80_EPS_${currentTicker}`);
     document.getElementById('input-eps').value = savedEps || (TICKERS[currentTicker]?.eps ?? '');
+    document.getElementById('input-lots').value = localStorage.getItem(`HT_V80_LOTS_${currentTicker}`) || '1';
 
     const getVal = (k, d) => localStorage.getItem('HT_V80_' + k)
                            || localStorage.getItem('HT_V76_' + k)
@@ -287,6 +293,7 @@ function applyTicker(ticker) {
 
     const savedEps = localStorage.getItem(`HT_V80_EPS_${ticker}`);
     document.getElementById('input-eps').value = savedEps || (TICKERS[ticker]?.eps ?? '');
+    document.getElementById('input-lots').value = localStorage.getItem(`HT_V80_LOTS_${ticker}`) || '1';
 
     const savedTarget = localStorage.getItem(`HT_V80_TSEC_${ticker}`);
     document.getElementById('target-secondary').value = savedTarget || '';
@@ -337,12 +344,14 @@ function calculate() {
     const tSec  = safeNum(document.getElementById('target-secondary').value);
     const t2330 = safeNum(document.getElementById('target-2330').value, 1850);
     const eps   = safeNum(document.getElementById('input-eps').value, TICKERS[currentTicker]?.eps || 1);
+    const lots  = Math.max(0, Math.round(safeNum(document.getElementById('input-lots').value, 1)));
 
     localStorage.setItem('HT_V80_CAP',  cap);
     localStorage.setItem('HT_V80_ROI',  roi);
     localStorage.setItem(`HT_V80_TSEC_${currentTicker}`, tSec);
     localStorage.setItem('HT_V80_T2330', t2330);
     localStorage.setItem(`HT_V80_EPS_${currentTicker}`,  eps);
+    localStorage.setItem(`HT_V80_LOTS_${currentTicker}`, lots);
 
     const curSec  = safeNum(marketData.stock_secondary_current || marketData.stock_3711_current, tSec || 330);
     const cur2330 = safeNum(marketData.stock_2330_current, 1915);
@@ -350,14 +359,15 @@ function calculate() {
     const vix     = safeNum(marketData.vix, 19.0);
     const adr     = safeNum(marketData.tsm_adr);
 
-    const s2330 = Math.max(0, Math.floor((cap - tSec * 1000) / t2330));
-    const dSec  = tSec ? ((curSec  / tSec  ) - 1) * 100 : 0;
-    const d2330 =         ((cur2330 / t2330) - 1) * 100;
-    const prem  = adr  ? ((adr / 5 * fx / cur2330) - 1) * 100 : NaN;
+    const secCost = tSec * lots * 1000;
+    const s2330   = Math.max(0, Math.floor((cap - secCost) / t2330));
+    const dSec    = tSec ? ((curSec  / tSec  ) - 1) * 100 : 0;
+    const d2330   =         ((cur2330 / t2330) - 1) * 100;
+    const prem    = adr  ? ((adr / 5 * fx / cur2330) - 1) * 100 : NaN;
 
     document.getElementById('res-pe').innerText          = (eps && tSec) ? (tSec / eps).toFixed(1) + 'X' : '--';
     document.getElementById('res-2330-share').innerText  = s2330 + ' 股';
-    document.getElementById('res-used').innerText        = (tSec * 1000 + s2330 * t2330).toLocaleString();
+    document.getElementById('res-used').innerText        = (secCost + s2330 * t2330).toLocaleString();
     document.getElementById('dist-secondary').innerText  = 'Gap: ' + safePct(dSec);
     document.getElementById('dist-2330').innerText       = 'Gap: ' + safePct(d2330);
     document.getElementById('roi-val-display').innerText = roi + '%';
@@ -405,6 +415,51 @@ async function fetchQuote(symbol) {
     };
 }
 
+async function fetchHistorical(symbol, range = '1mo') {
+    const url  = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=${range}`;
+    const data = await proxyFetch(url);
+    const result = data.chart.result[0];
+    const timestamps = result.timestamp || [];
+    const closes     = result.indicators.quote[0].close || [];
+    return timestamps
+        .map((ts, i) => ({ date: new Date(ts * 1000).toISOString().split('T')[0], price: closes[i] }))
+        .filter(e => e.price != null);
+}
+
+async function buildHistory30d() {
+    const [tsmArr, tw2330Arr, twSecArr, fxArr, vixArr] = await Promise.all([
+        fetchHistorical('TSM',                    '1mo'),
+        fetchHistorical('2330.TW',                '1mo'),
+        fetchHistorical(`${currentTicker}.TW`,    '1mo'),
+        fetchHistorical('TWD=X',                  '1mo'),
+        fetchHistorical('%5EVIX',                 '1mo'),
+    ]);
+
+    const toMap = arr => Object.fromEntries(arr.map(e => [e.date, e.price]));
+    const tw2330Map = toMap(tw2330Arr);
+    const twSecMap  = toMap(twSecArr);
+    const fxMap     = toMap(fxArr);
+    const vixMap    = toMap(vixArr);
+
+    // Use TSM dates as the timeline; only keep days where Taiwan data also exists
+    return tsmArr
+        .filter(({ date }) => tw2330Map[date] && twSecMap[date])
+        .map(({ date, price: adr }) => ({
+            date,
+            adr,
+            p2330: tw2330Map[date],
+            pSec:  twSecMap[date],
+            fx:    fxMap[date]  ?? 31.54,
+            vix:   vixMap[date] ?? 19.0,
+        }));
+}
+
+async function reloadHistory() {
+    history = [];
+    localStorage.removeItem(histKey());
+    await fetchAllData();
+}
+
 async function fetchAllData() {
     const btn      = document.getElementById('sync-btn');
     const statusEl = document.getElementById('load-status');
@@ -415,34 +470,59 @@ async function fetchAllData() {
     statusEl.className = 'warn';
 
     try {
-        const [tsm, tw2330, twSec, fx, vix] = await Promise.all([
-            fetchQuote('TSM'),
-            fetchQuote('2330.TW'),
-            fetchQuote(`${currentTicker}.TW`),
-            fetchQuote('TWD=X'),
-            fetchQuote('%5EVIX'),
-        ]);
+        // First sync with empty history → load 30 days automatically
+        if (history.length === 0) {
+            btn.innerText = 'LOADING 30D...';
+            const hist30 = await buildHistory30d();
+            if (hist30.length > 0) {
+                history = hist30;
+                localStorage.setItem(histKey(), JSON.stringify(history));
+                // Derive marketData from the most-recent historical entry
+                const lat = history[history.length - 1];
+                const prevAdr = history.length >= 2 ? history[history.length - 2].adr : lat.adr;
+                marketData = {
+                    date:                    lat.date,
+                    tsm_adr:                 lat.adr,
+                    adr_change:              prevAdr ? (lat.adr / prevAdr - 1) * 100 : 0,
+                    stock_2330_current:      lat.p2330,
+                    stock_secondary_current: lat.pSec,
+                    stock_3711_current:      lat.pSec,
+                    usd_twd:                 lat.fx,
+                    vix:                     lat.vix,
+                };
+                localStorage.setItem(snapKey(), JSON.stringify(marketData));
+            }
+        } else {
+            // Subsequent syncs → fetch today's live quotes only
+            btn.innerText = 'SYNCING...';
+            const [tsm, tw2330, twSec, fx, vix] = await Promise.all([
+                fetchQuote('TSM'),
+                fetchQuote('2330.TW'),
+                fetchQuote(`${currentTicker}.TW`),
+                fetchQuote('TWD=X'),
+                fetchQuote('%5EVIX'),
+            ]);
 
-        const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+            marketData = {
+                date:                    today,
+                tsm_adr:                 tsm.price,
+                adr_change:              tsm.changePct,
+                stock_2330_current:      tw2330.price,
+                stock_secondary_current: twSec.price,
+                stock_3711_current:      twSec.price,
+                usd_twd:                 fx.price,
+                vix:                     vix.price,
+            };
 
-        marketData = {
-            date:                    today,
-            tsm_adr:                 tsm.price,
-            adr_change:              tsm.changePct,
-            stock_2330_current:      tw2330.price,
-            stock_secondary_current: twSec.price,
-            stock_3711_current:      twSec.price,   // backward-compat
-            usd_twd:                 fx.price,
-            vix:                     vix.price,
-        };
-
-        if (!history.find(h => h.date === today)) {
-            history.push({ date: today, adr: tsm.price, p2330: tw2330.price,
-                           pSec: twSec.price, fx: fx.price, vix: vix.price });
-            history.sort((a, b) => new Date(a.date) - new Date(b.date));
-            localStorage.setItem(histKey(), JSON.stringify(history));
+            if (!history.find(h => h.date === today)) {
+                history.push({ date: today, adr: tsm.price, p2330: tw2330.price,
+                               pSec: twSec.price, fx: fx.price, vix: vix.price });
+                history.sort((a, b) => new Date(a.date) - new Date(b.date));
+                localStorage.setItem(histKey(), JSON.stringify(history));
+            }
+            localStorage.setItem(snapKey(), JSON.stringify(marketData));
         }
-        localStorage.setItem(snapKey(), JSON.stringify(marketData));
 
         updateMarketUI(); renderHistory(); calculate(); updateCharts();
 
